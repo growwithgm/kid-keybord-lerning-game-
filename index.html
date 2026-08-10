@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ABC Keyboard Fun 🎈</title>
+<meta name="description" content="A fun keyboard learning game for little kids. Press any key and see letters, colors and hear sounds!">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg1: #fdf6e3;
+    --bg2: #ffe9f0;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: "Comic Sans MS", "Chalkboard SE", "Segoe UI", sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  body {
+    background: linear-gradient(160deg, var(--bg1), var(--bg2));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  #confetti-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* ---------- Top bar (parent controls) ---------- */
+  #topbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    z-index: 10;
+  }
+
+  .mode-buttons { display: flex; gap: 8px; }
+
+  .btn {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #ffffffcc;
+    color: #555;
+    box-shadow: 0 3px 8px rgba(0,0,0,.12);
+    transition: transform .15s, background .2s;
+  }
+  .btn:hover { transform: scale(1.06); }
+  .btn.active { background: #ffd166; color: #6b4b00; }
+
+  .icon-buttons { display: flex; gap: 8px; }
+  .icon-btn {
+    border: none;
+    border-radius: 50%;
+    width: 46px;
+    height: 46px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    background: #ffffffcc;
+    box-shadow: 0 3px 8px rgba(0,0,0,.12);
+    transition: transform .15s;
+  }
+  .icon-btn:hover { transform: scale(1.1); }
+
+  /* ---------- Main stage ---------- */
+  #stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    z-index: 6;
+    min-height: 0;
+  }
+
+  #big-display {
+    font-size: clamp(6rem, 28vh, 16rem);
+    font-weight: 900;
+    line-height: 1;
+    transition: color .1s;
+    text-shadow: 0 6px 0 rgba(0,0,0,.08);
+  }
+
+  #big-display.pop { animation: pop .45s ease; }
+  @keyframes pop {
+    0%   { transform: scale(.3) rotate(-8deg); }
+    60%  { transform: scale(1.15) rotate(3deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  #big-display.wobble { animation: wobble .4s ease; }
+  @keyframes wobble {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-14px); }
+    75% { transform: translateX(14px); }
+  }
+
+  #word-display {
+    font-size: clamp(1.6rem, 6vh, 3.2rem);
+    font-weight: bold;
+    color: #7a6ff0;
+    margin-top: 8px;
+    min-height: 1.3em;
+  }
+
+  #hint-display {
+    font-size: clamp(1rem, 3.5vh, 1.6rem);
+    color: #b0a8a0;
+    margin-top: 10px;
+    min-height: 1.3em;
+  }
+
+  #stars {
+    font-size: clamp(1.4rem, 4.5vh, 2.2rem);
+    margin-top: 6px;
+    min-height: 1.3em;
+    letter-spacing: 4px;
+  }
+
+  /* ---------- On-screen keyboard ---------- */
+  #keyboard {
+    z-index: 6;
+    padding: 8px 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    width: 100%;
+    max-width: 820px;
+  }
+
+  .kb-row { display: flex; gap: 6px; justify-content: center; width: 100%; }
+
+  .kb-key {
+    flex: 1;
+    max-width: 66px;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    background: #ffffffd9;
+    box-shadow: 0 3px 0 rgba(0,0,0,.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(.9rem, 2.6vh, 1.5rem);
+    font-weight: bold;
+    color: #7d746c;
+    transition: transform .08s, background .12s, color .12s;
+  }
+
+  .kb-key.lit {
+    transform: translateY(3px) scale(1.08);
+    box-shadow: 0 0 0 rgba(0,0,0,.1);
+    color: #fff;
+  }
+
+  .kb-key.hint {
+    animation: hintPulse 0.9s ease infinite;
+    background: #ffd166;
+    color: #6b4b00;
+  }
+  @keyframes hintPulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
+  /* ---------- Fullscreen hint toast ---------- */
+  #toast {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333333cc;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: .95rem;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .4s;
+  }
+  #toast.show { opacity: 1; }
+
+  @media (max-height: 560px) {
+    #keyboard { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<div id="topbar">
+  <div class="mode-buttons">
+    <button class="btn active" id="btn-free">🎈 Free Play</button>
+    <button class="btn" id="btn-hunt">🔎 Find the Letter</button>
+  </div>
+  <div class="icon-buttons">
+    <button class="icon-btn" id="btn-sound" title="Sound on/off">🔊</button>
+    <button class="icon-btn" id="btn-full" title="Fullscreen (Enter key)">⛶</button>
+  </div>
+</div>
+
+<div id="stage">
+  <div id="big-display">🎈</div>
+  <div id="word-display">Press any key!</div>
+  <div id="hint-display">Enter = fullscreen</div>
+  <div id="stars"></div>
+</div>
+
+<div id="keyboard"></div>
+
+<div id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= Data ================= */
+
+  const WORDS = {
+    A: ["Apple", "🍎"],    B: ["Ball", "⚽"],      C: ["Cat", "🐱"],
+    D: ["Dog", "🐶"],      E: ["Elephant", "🐘"],  F: ["Fish", "🐟"],
+    G: ["Grapes", "🍇"],   H: ["Hat", "🎩"],       I: ["Ice cream", "🍦"],
+    J: ["Juice", "🧃"],    K: ["Kite", "🪁"],      L: ["Lion", "🦁"],
+    M: ["Monkey", "🐵"],   N: ["Nest", "🪺"],      O: ["Orange", "🍊"],
+    P: ["Penguin", "🐧"],  Q: ["Queen", "👑"],     R: ["Rainbow", "🌈"],
+    S: ["Sun", "☀️"],      T: ["Tiger", "🐯"],     U: ["Umbrella", "☂️"],
+    V: ["Violin", "🎻"],   W: ["Whale", "🐳"],     X: ["X-ray", "🩻"],
+    Y: ["Yo-yo", "🪀"],    Z: ["Zebra", "🦓"]
+  };
+
+  const NUMBER_WORDS = ["Zero","One","Two","Three","Four","Five","Six","Seven","Eight","Nine"];
+  const NUMBER_EMOJI = "⭐";
+
+  const COLORS = ["#ef476f","#f78c6b","#ffd166","#06d6a0","#118ab2","#7a6ff0","#e76f51","#2a9d8f"];
+  const PRAISE = ["Great job!","Yay! You found it!","Amazing!","Super!","Well done!","Wow!"];
+  const FUN_KEYS = ["🎈","🌟","🎉","🚀","🦄","🌈","🍭","🐣","🎵","💫"];
+
+  const KB_ROWS = [
+    ["1","2","3","4","5","6","7","8","9","0"],
+    ["Q","W","E","R","T","Y","U","I","O","P"],
+    ["A","S","D","F","G","H","J","K","L"],
+    ["Z","X","C","V","B","N","M"]
+  ];
+
+  /* ================= State ================= */
+
+  let mode = "free";           // "free" | "hunt"
+  let soundOn = true;
+  let target = null;           // current letter in hunt mode
+  let wrongCount = 0;
+  let starCount = 0;
+
+  /* ================= DOM ================= */
+
+  const bigEl   = document.getElementById("big-display");
+  const wordEl  = document.getElementById("word-display");
+  const hintEl  = document.getElementById("hint-display");
+  const starsEl = document.getElementById("stars");
+  const kbEl    = document.getElementById("keyboard");
+  const toastEl = document.getElementById("toast");
+
+  const keyEls = {};
+  KB_ROWS.forEach(row => {
+    const rowEl = document.createElement("div");
+    rowEl.className = "kb-row";
+    row.forEach(k => {
+      const kEl = document.createElement("div");
+      kEl.className = "kb-key";
+      kEl.textContent = k;
+      kEl.addEventListener("pointerdown", e => { e.preventDefault(); handleInput(k); });
+      rowEl.appendChild(kEl);
+      keyEls[k] = kEl;
+    });
+    kbEl.appendChild(rowEl);
+  });
+
+  /* ================= Audio (WebAudio, no files needed) ================= */
+
+  let audioCtx = null;
+  function ctx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+
+  function tone(freq, start, dur, type, vol) {
+    const ac = ctx();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, ac.currentTime + start);
+    gain.gain.linearRampToValueAtTime(vol || 0.18, ac.currentTime + start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + start + dur);
+    osc.connect(gain).connect(ac.destination);
+    osc.start(ac.currentTime + start);
+    osc.stop(ac.currentTime + start + dur + 0.05);
+  }
+
+  function popSound() {
+    if (!soundOn) return;
+    tone(500 + Math.random() * 400, 0, 0.12, "triangle", 0.15);
+  }
+
+  function successSound() {
+    if (!soundOn) return;
+    [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.09, 0.22, "sine", 0.16));
+  }
+
+  function gentleNo() {
+    if (!soundOn) return;
+    tone(220, 0, 0.18, "sine", 0.10);
+  }
+
+  /* ================= Speech ================= */
+
+  function speak(text) {
+    if (!soundOn || !("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 0.85;
+    u.pitch = 1.2;
+    speechSynthesis.speak(u);
+  }
+
+  /* ================= Confetti ================= */
+
+  const canvas = document.getElementById("confetti-canvas");
+  const cctx = canvas.getContext("2d");
+  let particles = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  function burst(x, y, big) {
+    const n = big ? 80 : 28;
+    for (let i = 0; i < n; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * (big ? 8 : 5);
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 3,
+        size: 4 + Math.random() * 6,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        life: 1,
+        spin: Math.random() * 6
+      });
+    }
+  }
+
+  function tick() {
+    cctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles = particles.filter(p => p.life > 0);
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.18;
+      p.life -= 0.014;
+      p.spin += 0.1;
+      cctx.save();
+      cctx.globalAlpha = Math.max(p.life, 0);
+      cctx.translate(p.x, p.y);
+      cctx.rotate(p.spin);
+      cctx.fillStyle = p.color;
+      cctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+      cctx.restore();
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  function centerBurst(big) {
+    burst(window.innerWidth / 2, window.innerHeight / 2.6, big);
+  }
+
+  /* ================= Display helpers ================= */
+
+  function showBig(text, color) {
+    bigEl.textContent = text;
+    bigEl.style.color = color || COLORS[Math.floor(Math.random() * COLORS.length)];
+    bigEl.classList.remove("pop", "wobble");
+    void bigEl.offsetWidth; /* restart animation */
+    bigEl.classList.add("pop");
+  }
+
+  function wobble() {
+    bigEl.classList.remove("pop", "wobble");
+    void bigEl.offsetWidth;
+    bigEl.classList.add("wobble");
+  }
+
+  function lightKey(k) {
+    const el = keyEls[k];
+    if (!el) return;
+    el.style.background = COLORS[Math.floor(Math.random() * COLORS.length)];
+    el.classList.add("lit");
+    setTimeout(() => {
+      el.classList.remove("lit");
+      el.style.background = "";
+    }, 220);
+  }
+
+  function clearHints() {
+    Object.values(keyEls).forEach(el => el.classList.remove("hint"));
+  }
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toastEl.classList.remove("show"), 2500);
+  }
+
+  /* ================= Game modes ================= */
+
+  function playFree(k) {
+    if (WORDS[k]) {
+      const [word, emoji] = WORDS[k];
+      showBig(k);
+      wordEl.textContent = emoji + " " + word;
+      hintEl.textContent = "";
+      popSound();
+      centerBurst(false);
+      speak(k + "! " + k + " for " + word + "!");
+    } else if (/^[0-9]$/.test(k)) {
+      const n = parseInt(k, 10);
+      showBig(k);
+      wordEl.textContent = n === 0 ? "Zero" : NUMBER_EMOJI.repeat(n) + " " + NUMBER_WORDS[n];
+      hintEl.textContent = "";
+      popSound();
+      centerBurst(false);
+      speak(NUMBER_WORDS[n] + "!");
+    } else {
+      const fun = FUN_KEYS[Math.floor(Math.random() * FUN_KEYS.length)];
+      showBig(fun);
+      wordEl.textContent = "";
+      hintEl.textContent = "";
+      popSound();
+      centerBurst(false);
+    }
+  }
+
+  function newTarget() {
+    const letters = Object.keys(WORDS);
+    let next;
+    do {
+      next = letters[Math.floor(Math.random() * letters.length)];
+    } while (next === target);
+    target = next;
+    wrongCount = 0;
+    clearHints();
+    showBig(target, "#7a6ff0");
+    wordEl.textContent = "Find this key!";
+    hintEl.textContent = "";
+    speak("Find the letter " + target + "!");
+  }
+
+  function playHunt(k) {
+    if (!/^[A-Z0-9]$/.test(k)) return;
+    if (k === target) {
+      const [word, emoji] = WORDS[k];
+      const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+      clearHints();
+      showBig(emoji);
+      wordEl.textContent = k + " for " + word + "!";
+      hintEl.textContent = praise;
+      starCount++;
+      starsEl.textContent = "⭐".repeat(Math.min(starCount, 10));
+      successSound();
+      centerBurst(true);
+      speak(praise + " " + k + " for " + word + "!");
+      setTimeout(newTarget, 2600);
+    } else {
+      wrongCount++;
+      wobble();
+      gentleNo();
+      if (wrongCount >= 3 && keyEls[target]) {
+        keyEls[target].classList.add("hint");
+        hintEl.textContent = "Look at the yellow key! 👇";
+      } else {
+        hintEl.textContent = "Try again! Find " + target;
+      }
+    }
+  }
+
+  /* ================= Input handling ================= */
+
+  function handleInput(k) {
+    lightKey(k);
+    if (mode === "free") playFree(k);
+    else playHunt(k);
+  }
+
+  document.addEventListener("keydown", function (e) {
+    /* Let browser shortcuts (Ctrl/Cmd/Alt combos) and F-keys work normally */
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (/^F\d+$/.test(e.key)) return;
+    if (e.key === "Escape") return;
+
+    /* Enter = fullscreen toggle (the special shortcut) */
+    if (e.key === "Enter") {
+      e.preventDefault();
+      toggleFullscreen();
+      return;
+    }
+
+    e.preventDefault();
+    if (e.repeat) return;
+
+    const k = e.key.length === 1 ? e.key.toUpperCase() : null;
+    if (k && /^[A-Z0-9]$/.test(k)) {
+      handleInput(k);
+    } else if (mode === "free") {
+      /* space, arrows, shift etc. — still give a fun reaction */
+      const fun = FUN_KEYS[Math.floor(Math.random() * FUN_KEYS.length)];
+      showBig(fun);
+      wordEl.textContent = "";
+      popSound();
+      centerBurst(false);
+    }
+  });
+
+  /* Tapping/clicking the stage also makes confetti (for touch screens) */
+  document.getElementById("stage").addEventListener("pointerdown", function (e) {
+    burst(e.clientX, e.clientY, false);
+    popSound();
+  });
+
+  /* ================= Fullscreen ================= */
+
+  function toggleFullscreen() {
+    const doc = document;
+    const el = doc.documentElement;
+    if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
+      (el.requestFullscreen || el.webkitRequestFullscreen).call(el).catch(() => {
+        toast("Fullscreen not available");
+      });
+      toast("Press Esc to exit fullscreen");
+    } else {
+      (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+    }
+  }
+
+  /* ================= Buttons ================= */
+
+  const btnFree = document.getElementById("btn-free");
+  const btnHunt = document.getElementById("btn-hunt");
+  const btnSound = document.getElementById("btn-sound");
+  const btnFull = document.getElementById("btn-full");
+
+  function setMode(m) {
+    mode = m;
+    btnFree.classList.toggle("active", m === "free");
+    btnHunt.classList.toggle("active", m === "hunt");
+    clearHints();
+    starsEl.textContent = "";
+    if (m === "free") {
+      target = null;
+      showBig("🎈", "#ef476f");
+      wordEl.textContent = "Press any key!";
+      hintEl.textContent = "Enter = fullscreen";
+    } else {
+      starCount = 0;
+      newTarget();
+    }
+  }
+
+  btnFree.addEventListener("click", () => setMode("free"));
+  btnHunt.addEventListener("click", () => setMode("hunt"));
+
+  btnSound.addEventListener("click", () => {
+    soundOn = !soundOn;
+    btnSound.textContent = soundOn ? "🔊" : "🔇";
+    if (!soundOn && "speechSynthesis" in window) speechSynthesis.cancel();
+  });
+
+  btnFull.addEventListener("click", toggleFullscreen);
+
+  /* Block right-click menu so little hands don't get lost */
+  document.addEventListener("contextmenu", e => e.preventDefault());
+
+  /* Warm up speech voices (some browsers load them lazily) */
+  if ("speechSynthesis" in window) speechSynthesis.getVoices();
+})();
+</script>
+</body>
+</html>
