@@ -24,9 +24,11 @@ Open the page and let your child press keys!
 - After 3 misses, the key glows yellow on the on-screen keyboard as a hint.
 
 ### 📝 Tasks mode (small practice missions)
-Five little tasks, each teaching one keyboard skill. Finishing a task earns a
-star (up to ⭐⭐⭐ per task), and stars are **saved on the device** so progress
-stays between sessions.
+Ten little tasks in two levels, each teaching one keyboard skill. Finishing a
+task earns a star (up to ⭐⭐⭐ per task), and stars are **saved on the device**
+so progress stays between sessions.
+
+**Level 1 🌱 — first steps**
 
 | Task | What it teaches |
 |------|-----------------|
@@ -35,6 +37,16 @@ stays between sessions.
 | 🐱 Little Words | Type CAT, DOG, SUN… one letter at a time |
 | 🐸 Space Jump | Find and press the big SPACE bar |
 | 🚗 Arrow Roads | Press the matching arrow keys |
+
+**Level 2 🚀 — for kids who mastered Level 1**
+
+| Task | What it teaches |
+|------|-----------------|
+| 🔡 Small Letters | Lowercase shown on screen → find the matching (uppercase) key |
+| 🧩 First Letter | See a picture, think of the word, press its first letter |
+| 🍎 Count & Press | Count the things on screen, press that number |
+| ⚡ Quick Catch | Press the letter before the friendly 6-second clock runs out (no fail — it just encourages and keeps going) |
+| 🐘 Big Words | Type 4-letter words (FISH, STAR, MOON…) |
 
 In every task, if the child can't find the key, the right key starts glowing
 yellow on the on-screen keyboard after a few seconds — so they can always

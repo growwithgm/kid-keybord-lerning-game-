@@ -162,10 +162,34 @@
 
   #task-cards {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-width: 780px;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 4px;
+  }
+
+  .level-label {
+    font-weight: bold;
+    color: #8d857d;
+    font-size: clamp(1rem, 3vh, 1.4rem);
+    margin-top: 4px;
+  }
+
+  .level-group {
+    display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
     justify-content: center;
-    max-width: 760px;
+  }
+
+  .total-stars {
+    font-weight: bold;
+    color: #e09f00;
+    font-size: clamp(1rem, 3vh, 1.4rem);
+    margin-top: 6px;
   }
 
   .task-card {
@@ -323,6 +347,13 @@
     ["CAT","🐱"], ["DOG","🐶"], ["SUN","☀️"], ["BUS","🚌"], ["CUP","☕"],
     ["HAT","🎩"], ["BEE","🐝"], ["PIG","🐷"], ["EGG","🥚"], ["CAR","🚗"]
   ];
+
+  const BIG_WORDS = [
+    ["FISH","🐟"], ["STAR","⭐"], ["MOON","🌙"], ["CAKE","🎂"], ["TREE","🌳"],
+    ["BIRD","🐦"], ["FROG","🐸"], ["DUCK","🦆"], ["LION","🦁"], ["BEAR","🐻"]
+  ];
+
+  const COUNT_EMOJIS = ["🍎","⭐","🐤","🎈","🍪","🐟","🌸"];
 
   const COLORS = ["#ef476f","#f78c6b","#ffd166","#06d6a0","#118ab2","#7a6ff0","#e76f51","#2a9d8f"];
   const PRAISE = ["Great job!","Yay! You found it!","Amazing!","Super!","Well done!","Wow!"];
@@ -642,6 +673,7 @@
   const TASKS = [
     {
       id: "abc",
+      level: 1,
       name: "ABC Train",
       emoji: "🚂",
       intro: "Press the letters in order! Start with A.",
@@ -673,6 +705,7 @@
     },
     {
       id: "numbers",
+      level: 1,
       name: "Number Rocket",
       emoji: "🔢",
       intro: "Press the numbers in order! Start with 1.",
@@ -704,6 +737,7 @@
     },
     {
       id: "words",
+      level: 1,
       name: "Little Words",
       emoji: "🐱",
       intro: "Type little words, one letter at a time!",
@@ -754,6 +788,7 @@
     },
     {
       id: "space",
+      level: 1,
       name: "Space Jump",
       emoji: "🐸",
       intro: "Press the big SPACE bar to make the frog jump!",
@@ -784,6 +819,7 @@
     },
     {
       id: "arrows",
+      level: 1,
       name: "Arrow Roads",
       emoji: "🚗",
       intro: "Press the arrow key that matches the arrow!",
@@ -813,6 +849,220 @@
           if (this.i >= this.seq.length) finishTask(this);
           else this.showStep();
         } else if (ARROWS[k]) {
+          taskWrong(want);
+        }
+      }
+    },
+
+    /* ---------- Level 2 (harder!) ---------- */
+    {
+      id: "lowercase",
+      level: 2,
+      name: "Small Letters",
+      emoji: "🔡",
+      intro: "Small letters! Find the matching big key.",
+      start() {
+        this.seq = Object.keys(WORDS).sort(() => Math.random() - 0.5).slice(0, 12);
+        this.i = 0;
+        this.showStep();
+      },
+      showStep() {
+        const k = this.seq[this.i];
+        showBig(k.toLowerCase(), "#118ab2");
+        wordEl.textContent = "Small " + k.toLowerCase() + " = big " + k;
+        progEl.textContent = "🔡 " + (this.i + 1) + " / " + this.seq.length;
+        armHint(k, 5000);
+        speak("This is small " + k + ". Press " + k + "!");
+      },
+      handleKey(k) {
+        const want = this.seq[this.i];
+        if (k === want) {
+          popSound();
+          burst(window.innerWidth / 2, window.innerHeight / 2.6, false);
+          this.i++;
+          if (this.i >= this.seq.length) finishTask(this);
+          else this.showStep();
+        } else if (/^[A-Z0-9]$/.test(k)) {
+          taskWrong(want);
+        }
+      }
+    },
+    {
+      id: "firstletter",
+      level: 2,
+      name: "First Letter",
+      emoji: "🧩",
+      intro: "Which letter does the word start with?",
+      start() {
+        this.seq = Object.keys(WORDS).sort(() => Math.random() - 0.5).slice(0, 10);
+        this.i = 0;
+        this.showStep();
+      },
+      showStep() {
+        const k = this.seq[this.i];
+        const [word, emoji] = WORDS[k];
+        showBig(emoji);
+        wordEl.textContent = "_ for " + word;
+        progEl.textContent = "🧩 " + (this.i + 1) + " / " + this.seq.length;
+        armHint(k, 6000);
+        speak("What letter does " + word + " start with?");
+      },
+      handleKey(k) {
+        const want = this.seq[this.i];
+        if (k === want) {
+          const [word] = WORDS[want];
+          wordEl.textContent = want + " for " + word + "!";
+          successSound();
+          burst(window.innerWidth / 2, window.innerHeight / 2.6, false);
+          speak(want + " for " + word + "!");
+          this.i++;
+          if (this.i >= this.seq.length) { finishTask(this); return; }
+          const self = this;
+          setTimeout(() => { if (activeTask === self) self.showStep(); }, 1600);
+        } else if (/^[A-Z0-9]$/.test(k)) {
+          taskWrong(want);
+        }
+      }
+    },
+    {
+      id: "count",
+      level: 2,
+      name: "Count & Press",
+      emoji: "🍎",
+      intro: "Count the things, then press that number!",
+      start() {
+        this.seq = [];
+        for (let j = 0; j < 8; j++) {
+          this.seq.push(1 + Math.floor(Math.random() * 9));
+        }
+        this.i = 0;
+        this.showStep();
+      },
+      showStep() {
+        const n = this.seq[this.i];
+        const emoji = COUNT_EMOJIS[Math.floor(Math.random() * COUNT_EMOJIS.length)];
+        this.emoji = emoji;
+        showBig("🤔", "#7a6ff0");
+        wordEl.textContent = emoji.repeat(n);
+        progEl.textContent = "🍎 " + (this.i + 1) + " / " + this.seq.length;
+        armHint(String(n), 7000);
+        speak("Count them! How many? Press the number!");
+      },
+      handleKey(k) {
+        const n = this.seq[this.i];
+        if (k === String(n)) {
+          showBig(String(n), "#06d6a0");
+          successSound();
+          burst(window.innerWidth / 2, window.innerHeight / 2.6, false);
+          speak(NUMBER_WORDS[n] + "! " + PRAISE[Math.floor(Math.random() * PRAISE.length)]);
+          this.i++;
+          if (this.i >= this.seq.length) { finishTask(this); return; }
+          const self = this;
+          setTimeout(() => { if (activeTask === self) self.showStep(); }, 1600);
+        } else if (/^[0-9]$/.test(k)) {
+          taskWrong(String(n));
+        }
+      }
+    },
+    {
+      id: "quick",
+      level: 2,
+      name: "Quick Catch",
+      emoji: "⚡",
+      intro: "Catch the letter before the clock runs out!",
+      start() {
+        this.seq = Object.keys(WORDS).sort(() => Math.random() - 0.5).slice(0, 10);
+        this.i = 0;
+        this.timer = null;
+        this.showStep();
+      },
+      showStep() {
+        const k = this.seq[this.i];
+        this.timeLeft = 6;
+        showBig(k);
+        wordEl.textContent = "Quick! Press " + k + "!";
+        this.drawClock();
+        armHint(k, 6500);
+        speak("Quick! Press " + k + "!");
+        clearInterval(this.timer);
+        const self = this;
+        this.timer = setInterval(() => {
+          self.timeLeft--;
+          if (self.timeLeft <= 0) {
+            /* no fail — just cheer them on and restart the clock */
+            self.timeLeft = 6;
+            gentleNo();
+            if (keyEls[k]) { clearHints(); keyEls[k].classList.add("hint"); }
+            speak("Press " + k + "! Look for the yellow key!");
+          }
+          self.drawClock();
+        }, 1000);
+      },
+      drawClock() {
+        progEl.textContent = "⏱️ " + "🟢".repeat(this.timeLeft) + "⚪".repeat(Math.max(6 - this.timeLeft, 0));
+      },
+      handleKey(k) {
+        const want = this.seq[this.i];
+        if (k === want) {
+          popSound();
+          burst(window.innerWidth / 2, window.innerHeight / 2.6, false);
+          this.i++;
+          if (this.i >= this.seq.length) { this.cleanup(); finishTask(this); }
+          else this.showStep();
+        } else if (/^[A-Z0-9]$/.test(k)) {
+          taskWrong(want);
+        }
+      },
+      cleanup() {
+        clearInterval(this.timer);
+      }
+    },
+    {
+      id: "bigwords",
+      level: 2,
+      name: "Big Words",
+      emoji: "🐘",
+      intro: "Type big words with four letters!",
+      start() {
+        this.words = BIG_WORDS.slice().sort(() => Math.random() - 0.5).slice(0, 4);
+        this.wi = 0;
+        this.li = 0;
+        this.showStep(true);
+      },
+      showStep(newWord) {
+        const [word, emoji] = this.words[this.wi];
+        showBig(emoji);
+        let html = "";
+        for (let j = 0; j < word.length; j++) {
+          const cls = j < this.li ? "done" : (j === this.li ? "next" : "todo");
+          html += '<span class="' + cls + '">' + word[j] + "</span> ";
+        }
+        wordEl.innerHTML = html;
+        progEl.textContent = "🐘 " + (this.wi + 1) + " / " + this.words.length;
+        const k = word[this.li];
+        armHint(k);
+        if (newWord) speak("Type the word " + word + "! Press " + k);
+        else speak("Press " + k);
+      },
+      handleKey(k) {
+        const [word] = this.words[this.wi];
+        const want = word[this.li];
+        if (k === want) {
+          popSound();
+          this.li++;
+          if (this.li >= word.length) {
+            successSound();
+            centerBurst(true);
+            speak("You typed " + word + "!");
+            this.wi++;
+            this.li = 0;
+            if (this.wi >= this.words.length) { finishTask(this); return; }
+            const self = this;
+            setTimeout(() => { if (activeTask === self) self.showStep(true); }, 1800);
+          } else {
+            this.showStep(false);
+          }
+        } else if (/^[A-Z0-9]$/.test(k)) {
           taskWrong(want);
         }
       }
@@ -846,22 +1096,47 @@
     return "⭐".repeat(n) + "☆".repeat(3 - n);
   }
 
+  function totalStars() {
+    return TASKS.reduce((sum, t) => sum + (progress[t.id] || 0), 0);
+  }
+
   function buildTaskMenu() {
     cardsEl.innerHTML = "";
-    TASKS.forEach(task => {
-      const card = document.createElement("button");
-      card.className = "task-card";
-      card.innerHTML =
-        '<span class="emoji">' + task.emoji + "</span>" +
-        '<span class="name">' + task.name + "</span>" +
-        '<span class="earned">' + starsFor(task.id) + "</span>";
-      card.addEventListener("click", () => startTask(task));
-      cardsEl.appendChild(card);
+    [[1, "Level 1 🌱"], [2, "Level 2 🚀"]].forEach(([lvl, label]) => {
+      const heading = document.createElement("div");
+      heading.className = "level-label";
+      heading.textContent = label;
+      cardsEl.appendChild(heading);
+      const group = document.createElement("div");
+      group.className = "level-group";
+      TASKS.filter(t => t.level === lvl).forEach(task => {
+        const card = document.createElement("button");
+        card.className = "task-card";
+        card.innerHTML =
+          '<span class="emoji">' + task.emoji + "</span>" +
+          '<span class="name">' + task.name + "</span>" +
+          '<span class="earned">' + starsFor(task.id) + "</span>";
+        card.addEventListener("click", () => startTask(task));
+        group.appendChild(card);
+      });
+      cardsEl.appendChild(group);
     });
+    const total = totalStars();
+    if (total > 0) {
+      const totalEl = document.createElement("div");
+      totalEl.className = "total-stars";
+      totalEl.textContent = "⭐ " + total + " stars!";
+      cardsEl.appendChild(totalEl);
+    }
+  }
+
+  function stopActiveTask() {
+    if (activeTask && activeTask.cleanup) activeTask.cleanup();
+    activeTask = null;
   }
 
   function openTaskMenu() {
-    activeTask = null;
+    stopActiveTask();
     clearHints();
     clearStage();
     bigEl.textContent = "";
@@ -980,7 +1255,7 @@
     clearStage();
     closeTaskMenu();
     btnBack.classList.remove("show");
-    activeTask = null;
+    stopActiveTask();
     if (m === "free") {
       target = null;
       showBig("🎈", "#ef476f");
