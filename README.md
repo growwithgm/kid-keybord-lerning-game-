@@ -23,6 +23,23 @@ Open the page and let your child press keys!
 - Correct → big confetti celebration + a star ⭐.
 - After 3 misses, the key glows yellow on the on-screen keyboard as a hint.
 
+### 📝 Tasks mode (small practice missions)
+Five little tasks, each teaching one keyboard skill. Finishing a task earns a
+star (up to ⭐⭐⭐ per task), and stars are **saved on the device** so progress
+stays between sessions.
+
+| Task | What it teaches |
+|------|-----------------|
+| 🚂 ABC Train | Press A → Z in order (letter positions) |
+| 🔢 Number Rocket | Press 1 → 0 in order (number row) |
+| 🐱 Little Words | Type CAT, DOG, SUN… one letter at a time |
+| 🐸 Space Jump | Find and press the big SPACE bar |
+| 🚗 Arrow Roads | Press the matching arrow keys |
+
+In every task, if the child can't find the key, the right key starts glowing
+yellow on the on-screen keyboard after a few seconds — so they can always
+succeed on their own.
+
 ## Shortcuts
 
 | Key | Action |
@@ -46,6 +63,13 @@ Fullscreen is recommended — it keeps little fingers away from browser tabs.
 - Voice uses the browser's built-in Speech Synthesis (English).
 - Sounds are generated with the Web Audio API (no audio files).
 - Works on desktop and touch devices (on-screen keyboard is tappable).
+- Task progress is stored in `localStorage` (nothing leaves the device).
+
+### Optimized for low-end devices (e.g. 4GB Chromebooks)
+- No images, fonts, or libraries to download — the whole game is one small file.
+- The animation loop only runs while confetti is on screen; when idle the game
+  uses ~0% CPU.
+- Confetti particles are capped, and the canvas renders at 1× resolution.
 
 ## Tips for parents (research-based)
 
