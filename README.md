@@ -52,6 +52,22 @@ In every task, if the child can't find the key, the right key starts glowing
 yellow on the on-screen keyboard after a few seconds — so they can always
 succeed on their own.
 
+### 👩‍🍳 Kitchen mode (make a pizza or a cake)
+A free, creative game with no scores and no way to lose. Every topping lives on
+the key whose letter it starts with — **M** for Mushroom, **S** for Strawberry —
+so decorating is letter practice in disguise.
+
+| Key | What it does |
+|-----|--------------|
+| Letters | Add that topping (🍕 Cheese, Mushroom, Olive, Tomato, Pepper, Bacon, Egg, Onion, Leaf, Shrimp — 🎂 Strawberry, Blueberry, Cherry, Kiwi, Grapes, Lemon, Heart, Flower, Nut, Melon) |
+| 1–9 | On the cake: that many candles 🕯️ (great for "how old are you?"). On the pizza: that many of one topping, counted out loud |
+| ← → ↑ ↓ | Sprinkles ✨ |
+| Space | 🔥 Bake it! — the food browns, confetti flies, and it says "Yummy!" |
+| Backspace | Start a fresh one |
+
+A legend under the food always shows which letter does what, so a child who
+can't read yet can still match the shapes.
+
 ## Shortcuts
 
 | Key | Action |

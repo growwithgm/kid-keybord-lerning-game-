@@ -210,6 +210,125 @@
   .task-card .name  { font-weight: bold; color: #6b6259; font-size: .95rem; }
   .task-card .earned { font-size: .9rem; min-height: 1.2em; letter-spacing: 1px; }
 
+  /* ---------- Kitchen ---------- */
+  #kitchen-menu {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 10px;
+  }
+  #kitchen-menu.open { display: flex; }
+  #kitchen-menu h2 {
+    color: #7a6ff0;
+    font-size: clamp(1.3rem, 4.5vh, 2.2rem);
+  }
+
+  /* while cooking, the letter stage gets out of the way */
+  #stage.cooking #big-display,
+  #stage.cooking #word-display,
+  #stage.cooking #hint-display,
+  #stage.cooking #stars,
+  #stage.cooking #progress { display: none; }
+
+  #cook-area {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding-top: 46px;   /* clear of the floating "Kitchen" button */
+  }
+  #cook-area.open { display: flex; }
+
+  #plate {
+    width: clamp(160px, 30vh, 300px);
+    height: clamp(160px, 30vh, 300px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  #base {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* pizza: round dough with sauce + cheese */
+  #base.pizza {
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, #ffcf6b 0 62%, #e8582f 62% 84%, #e8a35c 84% 100%);
+    box-shadow: 0 8px 18px rgba(0,0,0,.15);
+  }
+  #base.pizza.baked {
+    background: radial-gradient(circle at 50% 50%, #f5b93f 0 62%, #c8401d 62% 84%, #c9833c 84% 100%);
+  }
+
+  /* cake: layered sponge + icing, sitting lower in the box */
+  #base.cake {
+    border-radius: 14px 14px 10px 10px;
+    margin-top: 22%;
+    height: 78%;
+    background:
+      linear-gradient(#ffd9e8 0 26%, #fff0f5 26% 30%, #f6c99a 30% 62%, #fff0f5 62% 66%, #f6c99a 66% 100%);
+    box-shadow: 0 8px 18px rgba(0,0,0,.15);
+  }
+  #base.cake.baked {
+    background:
+      linear-gradient(#ffc2dc 0 26%, #ffe6ef 26% 30%, #e8b183 30% 62%, #ffe6ef 62% 66%, #e8b183 66% 100%);
+  }
+
+  .topping {
+    position: absolute;
+    font-size: clamp(1.1rem, 3.4vh, 1.9rem);
+    transform: translate(-50%, -50%);
+    animation: dropIn .35s ease;
+    pointer-events: none;
+  }
+  @keyframes dropIn {
+    0%   { transform: translate(-50%, -260%) scale(.4); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+
+  .topping.candle {
+    font-size: clamp(1.3rem, 4vh, 2.2rem);
+    animation: dropIn .35s ease;
+  }
+
+  #cook-msg {
+    font-size: clamp(1rem, 3.2vh, 1.6rem);
+    font-weight: bold;
+    color: #7a6ff0;
+    min-height: 1.4em;
+    text-align: center;
+  }
+
+  #legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 8px;
+    justify-content: center;
+    max-width: 760px;
+    padding: 0 8px;
+  }
+
+  .legend-item {
+    background: #ffffffcc;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: clamp(.75rem, 2vh, .95rem);
+    color: #6b6259;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  .legend-item b { color: #ef476f; }
+
   #btn-back {
     display: none;
     position: absolute;
@@ -286,6 +405,12 @@
   @media (max-height: 540px) {
     #keyboard { display: none; }
   }
+
+  /* On short screens the legend already names every key, so the
+     on-screen keyboard can step aside while cooking. */
+  @media (max-height: 720px) {
+    body.cooking #keyboard { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -297,6 +422,7 @@
     <button class="btn active" id="btn-free">🎈 Free Play</button>
     <button class="btn" id="btn-hunt">🔎 Find the Letter</button>
     <button class="btn" id="btn-tasks">📝 Tasks</button>
+    <button class="btn" id="btn-kitchen">👩‍🍳 Kitchen</button>
   </div>
   <div class="icon-buttons">
     <button class="icon-btn" id="btn-sound" title="Sound on/off">🔊</button>
@@ -310,6 +436,24 @@
   <div id="task-menu">
     <h2>Pick a task! 📝</h2>
     <div id="task-cards"></div>
+  </div>
+
+  <div id="kitchen-menu">
+    <h2>What shall we make? 👩‍🍳</h2>
+    <div class="level-group">
+      <button class="task-card" id="card-pizza">
+        <span class="emoji">🍕</span><span class="name">Pizza</span>
+      </button>
+      <button class="task-card" id="card-cake">
+        <span class="emoji">🎂</span><span class="name">Cake</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="cook-area">
+    <div id="plate"><div id="base"></div></div>
+    <div id="cook-msg">Press a letter to add a topping!</div>
+    <div id="legend"></div>
   </div>
 
   <div id="big-display">🎈</div>
@@ -1158,7 +1302,219 @@
     task.start();
   }
 
-  btnBack.addEventListener("click", openTaskMenu);
+  btnBack.addEventListener("click", () => {
+    if (mode === "kitchen") openKitchenMenu();
+    else openTaskMenu();
+  });
+
+  /* ================= Kitchen (pizza & cake) =================
+     Every topping lives on a letter key whose first letter matches
+     its name, so cooking doubles as letter practice.            */
+
+  const RECIPES = {
+    pizza: {
+      name: "Pizza",
+      emoji: "🍕",
+      shape: "pizza",
+      /* [emoji, name, plural] — plural is spoken when a number is pressed */
+      toppings: {
+        C: ["🧀", "Cheese",   "Cheese pieces"],
+        M: ["🍄", "Mushroom", "Mushrooms"],
+        O: ["🫒", "Olive",    "Olives"],
+        T: ["🍅", "Tomato",   "Tomatoes"],
+        P: ["🌶️", "Pepper",   "Peppers"],
+        B: ["🥓", "Bacon",    "Bacon pieces"],
+        E: ["🥚", "Egg",      "Eggs"],
+        N: ["🧅", "Onion",    "Onions"],
+        L: ["🌿", "Leaf",     "Leaves"],
+        S: ["🦐", "Shrimp",   "Shrimps"]
+      },
+      numberHint: "more toppings",
+      ready: "Yummy! Your pizza is ready!"
+    },
+    cake: {
+      name: "Cake",
+      emoji: "🎂",
+      shape: "cake",
+      toppings: {
+        S: ["🍓", "Strawberry"], B: ["🫐", "Blueberry"], C: ["🍒", "Cherry"],
+        K: ["🥝", "Kiwi"],       G: ["🍇", "Grapes"],    L: ["🍋", "Lemon"],
+        H: ["❤️", "Heart"],      F: ["🌸", "Flower"],    N: ["🥜", "Nut"],
+        M: ["🍈", "Melon"]
+      },
+      numberHint: "candles",
+      ready: "Happy birthday! Your cake is ready!"
+    }
+  };
+
+  const MAX_TOPPINGS = 70;
+
+  const kitchenMenuEl = document.getElementById("kitchen-menu");
+  const cookAreaEl    = document.getElementById("cook-area");
+  const baseEl        = document.getElementById("base");
+  const cookMsgEl     = document.getElementById("cook-msg");
+  const legendEl      = document.getElementById("legend");
+  const stageEl       = document.getElementById("stage");
+
+  let recipe = null;
+
+  /* Random spot inside the food, in % of the base box */
+  function randomSpot(shape) {
+    if (shape === "pizza") {
+      const angle = Math.random() * Math.PI * 2;
+      const r = Math.sqrt(Math.random()) * 34;   /* stay off the crust */
+      return { x: 50 + Math.cos(angle) * r, y: 50 + Math.sin(angle) * r };
+    }
+    return { x: 10 + Math.random() * 80, y: 18 + Math.random() * 70 };
+  }
+
+  function addTopping(emoji, x, y, extraClass) {
+    const el = document.createElement("span");
+    el.className = "topping" + (extraClass ? " " + extraClass : "");
+    el.textContent = emoji;
+    el.style.left = x + "%";
+    el.style.top = y + "%";
+    baseEl.appendChild(el);
+    /* keep the DOM small on low-end devices */
+    const all = baseEl.querySelectorAll(".topping:not(.candle)");
+    if (all.length > MAX_TOPPINGS) all[0].remove();
+  }
+
+  function placeCandles(n) {
+    baseEl.querySelectorAll(".candle").forEach(el => el.remove());
+    for (let i = 0; i < n; i++) {
+      const x = n === 1 ? 50 : 12 + (76 * i) / (n - 1);
+      addTopping("🕯️", x, -4, "candle");
+    }
+  }
+
+  function buildLegend() {
+    legendEl.innerHTML = "";
+    const add = html => {
+      const item = document.createElement("span");
+      item.className = "legend-item";
+      item.innerHTML = html;
+      legendEl.appendChild(item);
+    };
+    Object.keys(recipe.toppings).forEach(k => {
+      const [emoji, name] = recipe.toppings[k];
+      add("<b>" + k + "</b> " + emoji + " " + name);
+    });
+    add("<b>1-9</b> " + recipe.numberHint);
+    add("<b>◀▶</b> ✨ sprinkles");
+    add("<b>SPACE</b> 🔥 bake it!");
+  }
+
+  function startCooking(which) {
+    recipe = RECIPES[which];
+    kitchenMenuEl.classList.remove("open");
+    cookAreaEl.classList.add("open");
+    stageEl.classList.add("cooking");
+    document.body.classList.add("cooking");
+    btnBack.textContent = "🏠 Kitchen";
+    btnBack.classList.add("show");
+    baseEl.className = recipe.shape;
+    baseEl.innerHTML = "";
+    cookMsgEl.textContent = "Press a letter to add a topping!";
+    buildLegend();
+    speak("Let's make a " + recipe.name + "! Press a letter!");
+  }
+
+  function openKitchenMenu() {
+    recipe = null;
+    cookAreaEl.classList.remove("open");
+    stageEl.classList.remove("cooking");
+    document.body.classList.remove("cooking");
+    kitchenMenuEl.classList.add("open");
+    btnBack.classList.remove("show");
+    clearHints();
+    clearStage();
+    bigEl.textContent = "";
+  }
+
+  function closeKitchen() {
+    recipe = null;
+    kitchenMenuEl.classList.remove("open");
+    cookAreaEl.classList.remove("open");
+    stageEl.classList.remove("cooking");
+    document.body.classList.remove("cooking");
+  }
+
+  function bakeIt() {
+    baseEl.classList.add("baked");
+    cookMsgEl.textContent = recipe.emoji + " Yummy! 😋";
+    successSound();
+    centerBurst(true);
+    speak(recipe.ready);
+  }
+
+  function startOver() {
+    baseEl.innerHTML = "";
+    baseEl.classList.remove("baked");
+    cookMsgEl.textContent = "A fresh one! Press a letter!";
+    popSound();
+    speak("A fresh one!");
+  }
+
+  function playKitchen(k) {
+    if (!recipe) return;
+
+    if (k === "SPACE") { bakeIt(); return; }
+
+    if (k === "BACK") { startOver(); return; }
+
+    if (ARROWS[k]) {
+      for (let i = 0; i < 6; i++) {
+        const s = randomSpot(recipe.shape);
+        addTopping("✨", s.x, s.y);
+      }
+      cookMsgEl.textContent = "✨ Sprinkles!";
+      popSound();
+      speak("Sprinkles!");
+      return;
+    }
+
+    if (/^[0-9]$/.test(k)) {
+      const n = parseInt(k, 10);
+      if (n === 0) return;
+      if (recipe.shape === "cake") {
+        placeCandles(n);
+        cookMsgEl.textContent = "🕯️ " + NUMBER_WORDS[n] + " candles!";
+        speak(NUMBER_WORDS[n] + " candles!");
+      } else {
+        const keys = Object.keys(recipe.toppings);
+        const pick = keys[Math.floor(Math.random() * keys.length)];
+        const [emoji, name, plural] = recipe.toppings[pick];
+        for (let i = 0; i < n; i++) {
+          const s = randomSpot(recipe.shape);
+          addTopping(emoji, s.x, s.y);
+        }
+        const label = n === 1 ? name : (plural || name);
+        cookMsgEl.textContent = emoji + " " + NUMBER_WORDS[n] + " " + label + "!";
+        speak(NUMBER_WORDS[n] + " " + label + "!");
+      }
+      popSound();
+      return;
+    }
+
+    const topping = recipe.toppings[k];
+    if (topping) {
+      const [emoji, name] = topping;
+      const s = randomSpot(recipe.shape);
+      addTopping(emoji, s.x, s.y);
+      baseEl.classList.remove("baked");
+      cookMsgEl.textContent = emoji + " " + k + " for " + name + "!";
+      popSound();
+      speak(k + " for " + name + "!");
+    } else if (/^[A-Z]$/.test(k)) {
+      /* a letter with no topping — still friendly, never a failure */
+      cookMsgEl.textContent = k + "… no " + k + " topping. Try another letter!";
+      popSound();
+    }
+  }
+
+  document.getElementById("card-pizza").addEventListener("click", () => startCooking("pizza"));
+  document.getElementById("card-cake").addEventListener("click", () => startCooking("cake"));
 
   /* ================= Input routing ================= */
 
@@ -1171,11 +1527,14 @@
       playHunt(k);
     } else if (mode === "tasks" && activeTask) {
       activeTask.handleKey(k);
+    } else if (mode === "kitchen") {
+      playKitchen(k);
     }
   }
 
   function normalizeKey(e) {
     if (e.key === " " || e.code === "Space") return "SPACE";
+    if (e.key === "Backspace") return "BACK";
     if (e.key === "ArrowLeft")  return "LEFT";
     if (e.key === "ArrowUp")    return "UP";
     if (e.key === "ArrowDown")  return "DOWN";
@@ -1219,6 +1578,7 @@
   /* Tapping/clicking the stage also makes confetti (for touch screens) */
   document.getElementById("stage").addEventListener("pointerdown", function (e) {
     if (menuEl.classList.contains("open")) return;
+    if (kitchenMenuEl.classList.contains("open")) return;
     burst(e.clientX, e.clientY, false);
     popSound();
   });
@@ -1240,21 +1600,25 @@
 
   /* ================= Mode buttons ================= */
 
-  const btnFree  = document.getElementById("btn-free");
-  const btnHunt  = document.getElementById("btn-hunt");
-  const btnTasks = document.getElementById("btn-tasks");
-  const btnSound = document.getElementById("btn-sound");
-  const btnFull  = document.getElementById("btn-full");
+  const btnFree    = document.getElementById("btn-free");
+  const btnHunt    = document.getElementById("btn-hunt");
+  const btnTasks   = document.getElementById("btn-tasks");
+  const btnKitchen = document.getElementById("btn-kitchen");
+  const btnSound   = document.getElementById("btn-sound");
+  const btnFull    = document.getElementById("btn-full");
 
   function setMode(m) {
     mode = m;
     btnFree.classList.toggle("active", m === "free");
     btnHunt.classList.toggle("active", m === "hunt");
     btnTasks.classList.toggle("active", m === "tasks");
+    btnKitchen.classList.toggle("active", m === "kitchen");
     clearHints();
     clearStage();
     closeTaskMenu();
+    closeKitchen();
     btnBack.classList.remove("show");
+    btnBack.textContent = "🏠 All Tasks";
     stopActiveTask();
     if (m === "free") {
       target = null;
@@ -1264,14 +1628,17 @@
     } else if (m === "hunt") {
       starCount = 0;
       newTarget();
-    } else {
+    } else if (m === "tasks") {
       openTaskMenu();
+    } else {
+      openKitchenMenu();
     }
   }
 
   btnFree.addEventListener("click", () => setMode("free"));
   btnHunt.addEventListener("click", () => setMode("hunt"));
   btnTasks.addEventListener("click", () => setMode("tasks"));
+  btnKitchen.addEventListener("click", () => setMode("kitchen"));
 
   btnSound.addEventListener("click", () => {
     soundOn = !soundOn;
