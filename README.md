@@ -68,6 +68,23 @@ so decorating is letter practice in disguise.
 A legend under the food always shows which letter does what, so a child who
 can't read yet can still match the shapes.
 
+### 🎨 Painting mode
+A blank sheet of paper. Draw with a finger or the mouse — or steer the brush
+with the **arrow keys**, which is the best arrow practice in the whole game.
+Colours live on their own letters (**R** for Red, **B** for Blue), so picking a
+colour is letter practice too.
+
+| Key | What it does |
+|-----|--------------|
+| R O Y G B P K W | Red, Orange, Yellow, Green, Blue, Purple, blacK, White — and White rubs out, since the paper is white |
+| ← → ↑ ↓ | Walk the brush around, drawing as it goes (hold two for diagonals) |
+| 1–5 | Brush size, thin to fat |
+| Space | Drop a random sticker ⭐🌸🦋 at the brush |
+| Backspace | A clean page |
+
+Colour swatches under the paper are tappable for touch screens, and the
+**💾 Save** button downloads the painting as a PNG.
+
 ## Shortcuts
 
 | Key | Action |

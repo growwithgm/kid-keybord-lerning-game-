@@ -235,6 +235,110 @@
   #stage.cooking #stars,
   #stage.cooking #progress { display: none; }
 
+  /* ---------- Painting ---------- */
+  #stage.painting #big-display,
+  #stage.painting #word-display,
+  #stage.painting #hint-display,
+  #stage.painting #stars,
+  #stage.painting #progress { display: none; }
+
+  #paint-area {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    padding: 6px 10px 10px;
+  }
+  #paint-area.open { display: flex; }
+
+  #canvas-wrap {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    max-width: 1100px;
+    min-height: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,.14);
+    touch-action: none;       /* let us draw instead of scrolling */
+    cursor: crosshair;
+  }
+
+  #paint-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  #brush-cursor {
+    position: absolute;
+    border: 3px solid #00000033;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+  }
+
+  #paint-msg {
+    font-size: clamp(.95rem, 2.6vh, 1.3rem);
+    font-weight: bold;
+    color: #7a6ff0;
+    min-height: 1.3em;
+    text-align: center;
+  }
+
+  #paint-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .swatch {
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+    width: clamp(38px, 6vh, 50px);
+    height: clamp(38px, 6vh, 50px);
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: clamp(.95rem, 2.4vh, 1.2rem);
+    box-shadow: 0 3px 0 rgba(0,0,0,.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .swatch.on { outline: 4px solid #7a6ff0; outline-offset: 2px; }
+
+  .paint-tip {
+    background: #ffffffcc;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: clamp(.75rem, 2vh, .95rem);
+    color: #6b6259;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  .paint-tip b { color: #ef476f; }
+
+  .paint-btn {
+    border: none;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    background: #ffffffe6;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: clamp(.8rem, 2.1vh, 1rem);
+    color: #6b6259;
+    box-shadow: 0 3px 8px rgba(0,0,0,.12);
+  }
+
   #cook-area {
     display: none;
     flex-direction: column;
@@ -411,6 +515,9 @@
   @media (max-height: 720px) {
     body.cooking #keyboard { display: none; }
   }
+
+  /* painting wants every pixel it can get */
+  body.painting #keyboard { display: none; }
 </style>
 </head>
 <body>
@@ -423,6 +530,7 @@
     <button class="btn" id="btn-hunt">🔎 Find the Letter</button>
     <button class="btn" id="btn-tasks">📝 Tasks</button>
     <button class="btn" id="btn-kitchen">👩‍🍳 Kitchen</button>
+    <button class="btn" id="btn-paint">🎨 Painting</button>
   </div>
   <div class="icon-buttons">
     <button class="icon-btn" id="btn-sound" title="Sound on/off">🔊</button>
@@ -454,6 +562,15 @@
     <div id="plate"><div id="base"></div></div>
     <div id="cook-msg">Press a letter to add a topping!</div>
     <div id="legend"></div>
+  </div>
+
+  <div id="paint-area">
+    <div id="canvas-wrap">
+      <canvas id="paint-canvas"></canvas>
+      <div id="brush-cursor"></div>
+    </div>
+    <div id="paint-msg">Draw with your finger, or move with the arrow keys!</div>
+    <div id="paint-legend"></div>
   </div>
 
   <div id="big-display">🎈</div>
@@ -1516,6 +1633,296 @@
   document.getElementById("card-pizza").addEventListener("click", () => startCooking("pizza"));
   document.getElementById("card-cake").addEventListener("click", () => startCooking("cake"));
 
+  /* ================= Painting =================
+     Finger/mouse draws freely; the arrow keys walk the brush around
+     the paper, and letter keys pick colours (R for Red, B for Blue),
+     so a drawing session is also arrow- and letter-key practice.  */
+
+  const PAINT_COLORS = {
+    R: ["#e63946", "Red"],
+    O: ["#f77f00", "Orange"],
+    Y: ["#ffc300", "Yellow"],
+    G: ["#2a9d8f", "Green"],
+    B: ["#1d7fd8", "Blue"],
+    P: ["#8b5cf6", "Purple"],
+    K: ["#2b2b2b", "Black"],
+    W: ["#ffffff", "White"]      /* white paper, so this one rubs out */
+  };
+
+  const PAINT_SIZES = [6, 12, 20, 32, 46];
+  const STAMPS = ["⭐", "🌸", "❤️", "🦋", "🌈", "🐝", "🍀", "🐞", "🌞", "🐠"];
+
+  const paintAreaEl   = document.getElementById("paint-area");
+  const canvasWrapEl  = document.getElementById("canvas-wrap");
+  const paintCanvas   = document.getElementById("paint-canvas");
+  const pctx          = paintCanvas.getContext("2d");
+  const brushCursorEl = document.getElementById("brush-cursor");
+  const paintMsgEl    = document.getElementById("paint-msg");
+  const paintLegendEl = document.getElementById("paint-legend");
+
+  let paintKey = "R";
+  let paintSizeIdx = 1;
+  let brushX = 0, brushY = 0;
+  let strokeOpen = false;          /* pointer is down and drawing */
+  const heldArrows = new Set();
+  let paintRaf = null;
+
+  function paintColor() { return PAINT_COLORS[paintKey][0]; }
+  function paintSize()  { return PAINT_SIZES[paintSizeIdx]; }
+
+  /* Size the backing store to the element at 1x — cheap on low-end
+     GPUs — keeping whatever is already painted. */
+  function fitCanvas() {
+    const w = Math.max(canvasWrapEl.clientWidth, 1);
+    const h = Math.max(canvasWrapEl.clientHeight, 1);
+    if (paintCanvas.width === w && paintCanvas.height === h) return;
+    let keep = null;
+    if (paintCanvas.width && paintCanvas.height) {
+      keep = document.createElement("canvas");
+      keep.width = paintCanvas.width;
+      keep.height = paintCanvas.height;
+      keep.getContext("2d").drawImage(paintCanvas, 0, 0);
+    }
+    paintCanvas.width = w;
+    paintCanvas.height = h;
+    pctx.fillStyle = "#ffffff";
+    pctx.fillRect(0, 0, w, h);
+    if (keep) pctx.drawImage(keep, 0, 0);
+    pctx.lineCap = "round";
+    pctx.lineJoin = "round";
+    brushX = Math.min(brushX || w / 2, w);
+    brushY = Math.min(brushY || h / 2, h);
+    moveCursor();
+  }
+
+  function moveCursor() {
+    const s = paintSize();
+    brushCursorEl.style.width = s + "px";
+    brushCursorEl.style.height = s + "px";
+    brushCursorEl.style.left = brushX + "px";
+    brushCursorEl.style.top = brushY + "px";
+    brushCursorEl.style.background = paintKey === "W" ? "transparent" : paintColor() + "55";
+  }
+
+  function strokeTo(x, y) {
+    pctx.strokeStyle = paintColor();
+    pctx.lineWidth = paintSize();
+    pctx.beginPath();
+    pctx.moveTo(brushX, brushY);
+    pctx.lineTo(x, y);
+    pctx.stroke();
+    brushX = x;
+    brushY = y;
+    moveCursor();
+  }
+
+  function dot(x, y) {
+    pctx.fillStyle = paintColor();
+    pctx.beginPath();
+    pctx.arc(x, y, paintSize() / 2, 0, Math.PI * 2);
+    pctx.fill();
+    brushX = x;
+    brushY = y;
+    moveCursor();
+  }
+
+  /* --- drawing with a finger or the mouse --- */
+  canvasWrapEl.addEventListener("pointerdown", e => {
+    if (mode !== "paint") return;
+    canvasWrapEl.setPointerCapture(e.pointerId);
+    strokeOpen = true;
+    const r = paintCanvas.getBoundingClientRect();
+    dot(e.clientX - r.left, e.clientY - r.top);
+    popSound();
+  });
+
+  canvasWrapEl.addEventListener("pointermove", e => {
+    if (mode !== "paint" || !strokeOpen) return;
+    const r = paintCanvas.getBoundingClientRect();
+    strokeTo(e.clientX - r.left, e.clientY - r.top);
+  });
+
+  const endStroke = () => { strokeOpen = false; };
+  canvasWrapEl.addEventListener("pointerup", endStroke);
+  canvasWrapEl.addEventListener("pointercancel", endStroke);
+  canvasWrapEl.addEventListener("pointerleave", endStroke);
+
+  /* --- drawing with the arrow keys --- */
+  function arrowStep() {
+    if (mode !== "paint" || heldArrows.size === 0) { paintRaf = null; return; }
+    const speed = 4;
+    let x = brushX, y = brushY;
+    if (heldArrows.has("LEFT"))  x -= speed;
+    if (heldArrows.has("RIGHT")) x += speed;
+    if (heldArrows.has("UP"))    y -= speed;
+    if (heldArrows.has("DOWN"))  y += speed;
+    x = Math.max(0, Math.min(x, paintCanvas.width));
+    y = Math.max(0, Math.min(y, paintCanvas.height));
+    strokeTo(x, y);
+    paintRaf = requestAnimationFrame(arrowStep);
+  }
+
+  function startArrow(k) {
+    if (heldArrows.has(k)) return;
+    heldArrows.add(k);
+    if (paintRaf === null) paintRaf = requestAnimationFrame(arrowStep);
+  }
+
+  function stopArrows() {
+    heldArrows.clear();
+    if (paintRaf !== null) { cancelAnimationFrame(paintRaf); paintRaf = null; }
+  }
+
+  function stampHere() {
+    const emoji = STAMPS[Math.floor(Math.random() * STAMPS.length)];
+    const size = Math.max(paintSize() * 2.2, 36);
+    pctx.font = size + "px serif";
+    pctx.textAlign = "center";
+    pctx.textBaseline = "middle";
+    pctx.fillText(emoji, brushX, brushY);
+    paintMsgEl.textContent = emoji + " A sticker!";
+    successSound();
+    speak("A sticker!");
+  }
+
+  function clearPainting() {
+    pctx.fillStyle = "#ffffff";
+    pctx.fillRect(0, 0, paintCanvas.width, paintCanvas.height);
+    brushX = paintCanvas.width / 2;
+    brushY = paintCanvas.height / 2;
+    moveCursor();
+    paintMsgEl.textContent = "A clean page! 📄";
+    popSound();
+    speak("A clean page!");
+  }
+
+  function savePainting() {
+    try {
+      const link = document.createElement("a");
+      link.download = "my-painting.png";
+      link.href = paintCanvas.toDataURL("image/png");
+      link.click();
+      paintMsgEl.textContent = "💾 Saved your painting!";
+    } catch (e) {
+      paintMsgEl.textContent = "Could not save here 😕";
+    }
+  }
+
+  function markSwatch() {
+    paintLegendEl.querySelectorAll(".swatch").forEach(el => {
+      el.classList.toggle("on", el.dataset.key === paintKey);
+    });
+  }
+
+  function buildPaintLegend() {
+    paintLegendEl.innerHTML = "";
+    Object.keys(PAINT_COLORS).forEach(k => {
+      const [hex, name] = PAINT_COLORS[k];
+      const b = document.createElement("button");
+      b.className = "swatch";
+      b.dataset.key = k;
+      b.textContent = k;
+      b.style.background = hex;
+      b.style.color = (k === "Y" || k === "W") ? "#6b6259" : "#fff";
+      b.title = name;
+      b.addEventListener("click", () => pickColor(k));
+      paintLegendEl.appendChild(b);
+    });
+
+    const tip = html => {
+      const s = document.createElement("span");
+      s.className = "paint-tip";
+      s.innerHTML = html;
+      paintLegendEl.appendChild(s);
+    };
+    tip("<b>◀▲▼▶</b> move the brush");
+    tip("<b>1-5</b> brush size");
+    tip("<b>SPACE</b> sticker");
+
+    const clearBtn = document.createElement("button");
+    clearBtn.className = "paint-btn";
+    clearBtn.textContent = "🧹 New page";
+    clearBtn.addEventListener("click", clearPainting);
+    paintLegendEl.appendChild(clearBtn);
+
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "paint-btn";
+    saveBtn.textContent = "💾 Save";
+    saveBtn.addEventListener("click", savePainting);
+    paintLegendEl.appendChild(saveBtn);
+
+    markSwatch();
+  }
+
+  function pickColor(k) {
+    paintKey = k;
+    const name = PAINT_COLORS[k][1];
+    markSwatch();
+    moveCursor();
+    paintMsgEl.textContent = (k === "W" ? "🧽 " : "🎨 ") + k + " for " + name +
+                             (k === "W" ? " — this one rubs out!" : "!");
+    popSound();
+    speak(k + " for " + name + "!");
+  }
+
+  function openPainting() {
+    paintAreaEl.classList.add("open");
+    stageEl.classList.add("painting");
+    document.body.classList.add("painting");
+    clearHints();
+    clearStage();
+    bigEl.textContent = "";
+    buildPaintLegend();
+    /* the canvas only has a size once it is visible */
+    requestAnimationFrame(() => {
+      fitCanvas();
+      if (!paintCanvas.dataset.ready) {
+        pctx.fillStyle = "#ffffff";
+        pctx.fillRect(0, 0, paintCanvas.width, paintCanvas.height);
+        brushX = paintCanvas.width / 2;
+        brushY = paintCanvas.height / 2;
+        paintCanvas.dataset.ready = "1";
+        moveCursor();
+      }
+    });
+    paintMsgEl.textContent = "Draw with your finger, or move with the arrow keys!";
+    speak("Let's paint! Press R for red!");
+  }
+
+  function closePainting() {
+    stopArrows();
+    strokeOpen = false;
+    paintAreaEl.classList.remove("open");
+    stageEl.classList.remove("painting");
+    document.body.classList.remove("painting");
+  }
+
+  function playPaint(k) {
+    if (ARROWS[k]) { startArrow(k); return; }
+    if (k === "SPACE") { stampHere(); return; }
+    if (k === "BACK")  { clearPainting(); return; }
+
+    if (/^[1-5]$/.test(k)) {
+      paintSizeIdx = parseInt(k, 10) - 1;
+      moveCursor();
+      paintMsgEl.textContent = "🖌️ Brush " + NUMBER_WORDS[parseInt(k, 10)];
+      popSound();
+      speak("Brush " + NUMBER_WORDS[parseInt(k, 10)]);
+      return;
+    }
+
+    if (PAINT_COLORS[k]) { pickColor(k); return; }
+
+    if (/^[A-Z]$/.test(k)) {
+      paintMsgEl.textContent = k + "… that key has no colour. Try R, O, Y, G, B, P, K or W!";
+      popSound();
+    }
+  }
+
+  window.addEventListener("resize", () => { if (mode === "paint") fitCanvas(); });
+  /* a key can get stuck down if the window loses focus mid-press */
+  window.addEventListener("blur", stopArrows);
+
   /* ================= Input routing ================= */
 
   /* k is a normalized key id: "A".."Z", "0".."9", "SPACE", "LEFT" ... */
@@ -1529,6 +1936,8 @@
       activeTask.handleKey(k);
     } else if (mode === "kitchen") {
       playKitchen(k);
+    } else if (mode === "paint") {
+      playPaint(k);
     }
   }
 
@@ -1575,10 +1984,24 @@
     }
   });
 
+  /* Arrow keys are held down to drag the paint brush around */
+  document.addEventListener("keyup", function (e) {
+    if (mode !== "paint") return;
+    const k = normalizeKey(e);
+    if (k && ARROWS[k]) {
+      heldArrows.delete(k);
+      if (heldArrows.size === 0 && paintRaf !== null) {
+        cancelAnimationFrame(paintRaf);
+        paintRaf = null;
+      }
+    }
+  });
+
   /* Tapping/clicking the stage also makes confetti (for touch screens) */
   document.getElementById("stage").addEventListener("pointerdown", function (e) {
     if (menuEl.classList.contains("open")) return;
     if (kitchenMenuEl.classList.contains("open")) return;
+    if (mode === "paint") return;          /* don't scatter confetti over the paper */
     burst(e.clientX, e.clientY, false);
     popSound();
   });
@@ -1604,6 +2027,7 @@
   const btnHunt    = document.getElementById("btn-hunt");
   const btnTasks   = document.getElementById("btn-tasks");
   const btnKitchen = document.getElementById("btn-kitchen");
+  const btnPaint   = document.getElementById("btn-paint");
   const btnSound   = document.getElementById("btn-sound");
   const btnFull    = document.getElementById("btn-full");
 
@@ -1613,10 +2037,12 @@
     btnHunt.classList.toggle("active", m === "hunt");
     btnTasks.classList.toggle("active", m === "tasks");
     btnKitchen.classList.toggle("active", m === "kitchen");
+    btnPaint.classList.toggle("active", m === "paint");
     clearHints();
     clearStage();
     closeTaskMenu();
     closeKitchen();
+    closePainting();
     btnBack.classList.remove("show");
     btnBack.textContent = "🏠 All Tasks";
     stopActiveTask();
@@ -1630,8 +2056,10 @@
       newTarget();
     } else if (m === "tasks") {
       openTaskMenu();
-    } else {
+    } else if (m === "kitchen") {
       openKitchenMenu();
+    } else {
+      openPainting();
     }
   }
 
@@ -1639,6 +2067,7 @@
   btnHunt.addEventListener("click", () => setMode("hunt"));
   btnTasks.addEventListener("click", () => setMode("tasks"));
   btnKitchen.addEventListener("click", () => setMode("kitchen"));
+  btnPaint.addEventListener("click", () => setMode("paint"));
 
   btnSound.addEventListener("click", () => {
     soundOn = !soundOn;
