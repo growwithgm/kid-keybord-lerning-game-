@@ -85,6 +85,35 @@ colour is letter practice too.
 Colour swatches under the paper are tappable for touch screens, and the
 **💾 Save** button downloads the painting as a PNG.
 
+### 🎓 Big Test (the exam)
+Twelve questions drawn from every game in the app, to check what has actually
+stuck. A point is scored **only when the answer is right first time**, but the
+child can keep trying until they get it, so the test never leaves them stuck —
+after three wrong tries the right key glows yellow and they move on.
+
+| # | Question | Comes from |
+|---|----------|------------|
+| 1 | Press this letter | Find the Letter |
+| 2 | Press this small letter | Small Letters |
+| 3 | Which letter does Apple start with? | First Letter |
+| 4 | Which letter comes after C? | ABC Train |
+| 5 | Count these — press the number | Count & Press |
+| 6 | Which number comes after 4? | Number Rocket |
+| 7 | Press the big SPACE bar | Space Jump |
+| 8 | Press the matching arrow | Arrow Roads |
+| 9 | Type a little word (CAT) | Little Words |
+| 10 | Type a big word (FISH) | Big Words |
+| 11 | Which letter paints Red? | Painting |
+| 12 | Which letter adds Mushroom? | Kitchen |
+
+The questions are freshly drawn every run, so the test can be taken again
+without memorising answers.
+
+**Passing is 9 out of 12.** The result page shows the score, a 🏆 if passed,
+and a per-skill breakdown (Letters 4/4, Numbers 2/2, Keys, Words, Games) so a
+grown-up can see at a glance what to practise next. The best score and the
+passed badge are saved on the device.
+
 ## Shortcuts
 
 | Key | Action |

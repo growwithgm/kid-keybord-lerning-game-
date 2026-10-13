@@ -242,6 +242,89 @@
   #stage.painting #stars,
   #stage.painting #progress { display: none; }
 
+  /* ---------- Big Test (exam) ---------- */
+  #big-display.small {
+    font-size: clamp(2.2rem, 10vh, 5rem);
+    line-height: 1.25;
+  }
+
+  #exam-menu {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+  }
+  #exam-menu.open { display: flex; }
+
+  #exam-card {
+    background: #ffffffe8;
+    border-radius: 22px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.12);
+    padding: 18px 22px;
+    max-width: 640px;
+    max-height: 84%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+
+  #exam-card .exam-emoji { font-size: clamp(2.8rem, 12vh, 5rem); line-height: 1; }
+  #exam-card h2 {
+    color: #7a6ff0;
+    font-size: clamp(1.3rem, 4.5vh, 2.1rem);
+  }
+  #exam-card p {
+    color: #6b6259;
+    font-size: clamp(.9rem, 2.6vh, 1.15rem);
+    font-weight: bold;
+  }
+  #exam-card .exam-score {
+    font-size: clamp(1.6rem, 6vh, 2.8rem);
+    font-weight: bold;
+    color: #e09f00;
+  }
+  #exam-card .exam-note {
+    color: #a39a92;
+    font-size: clamp(.75rem, 2vh, .9rem);
+    font-weight: normal;
+  }
+
+  .exam-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+  .exam-chip {
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: clamp(.78rem, 2vh, .95rem);
+    font-weight: bold;
+    background: #f1ede9;
+    color: #6b6259;
+  }
+  .exam-chip.good { background: #d8f5ee; color: #19715f; }
+  .exam-chip.weak { background: #ffe2e6; color: #b4304a; }
+
+  .exam-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 4px; }
+
+  #stars.dots { letter-spacing: 1px; font-size: clamp(1rem, 2.8vh, 1.5rem); }
+
+  /* six mode buttons need to stay on one line on smaller laptops */
+  @media (max-width: 1150px) {
+    .mode-buttons .btn { padding: 9px 11px; font-size: .88rem; }
+  }
+  @media (max-width: 900px) {
+    .mode-buttons .btn { padding: 8px 9px; font-size: .78rem; }
+    .icon-btn { width: 40px; height: 40px; font-size: 1.1rem; }
+  }
+
   #paint-area {
     display: none;
     flex-direction: column;
@@ -531,6 +614,7 @@
     <button class="btn" id="btn-tasks">📝 Tasks</button>
     <button class="btn" id="btn-kitchen">👩‍🍳 Kitchen</button>
     <button class="btn" id="btn-paint">🎨 Painting</button>
+    <button class="btn" id="btn-exam">🎓 Big Test</button>
   </div>
   <div class="icon-buttons">
     <button class="icon-btn" id="btn-sound" title="Sound on/off">🔊</button>
@@ -562,6 +646,10 @@
     <div id="plate"><div id="base"></div></div>
     <div id="cook-msg">Press a letter to add a topping!</div>
     <div id="legend"></div>
+  </div>
+
+  <div id="exam-menu">
+    <div id="exam-card"></div>
   </div>
 
   <div id="paint-area">
@@ -851,6 +939,7 @@
     hintEl.textContent = "";
     starsEl.textContent = "";
     progEl.textContent = "";
+    bigEl.classList.remove("small");
   }
 
   /* ================= Free play ================= */
@@ -1421,6 +1510,7 @@
 
   btnBack.addEventListener("click", () => {
     if (mode === "kitchen") openKitchenMenu();
+    else if (mode === "exam") openExamMenu();
     else openTaskMenu();
   });
 
@@ -1923,6 +2013,273 @@
   /* a key can get stuck down if the window loses focus mid-press */
   window.addEventListener("blur", stopArrows);
 
+  /* ================= Big Test (exam) =================
+     Twelve questions drawn from every game in the app. A question
+     scores a point only when it is answered right on the first try,
+     but the child can always keep trying until they get it, so the
+     test never leaves them stuck.                                */
+
+  const EXAM_LENGTH = 12;
+  const EXAM_PASS = 9;                       /* 9 / 12 = 75% */
+  const COLOR_SQUARES = { R: "🟥", O: "🟧", Y: "🟨", G: "🟩", B: "🟦", P: "🟪" };
+
+  const examMenuEl = document.getElementById("exam-menu");
+  const examCardEl = document.getElementById("exam-card");
+
+  let exam = null;
+
+  function buildExam() {
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    const letters = Object.keys(WORDS);
+    const qs = [];
+
+    /* --- letters --- */
+    const a1 = pick(letters);
+    qs.push({ group: "Letters", big: a1, bigColor: "#7a6ff0",
+              prompt: "Press this letter!", say: "Press the letter " + a1 + "!", answer: a1 });
+
+    const a2 = pick(letters);
+    qs.push({ group: "Letters", big: a2.toLowerCase(), bigColor: "#118ab2",
+              prompt: "Press this small letter!",
+              say: "This is small " + a2 + ". Press " + a2 + "!", answer: a2 });
+
+    const a3 = pick(letters);
+    qs.push({ group: "Letters", big: WORDS[a3][1],
+              prompt: "Which letter does " + WORDS[a3][0] + " start with?",
+              say: "Which letter does " + WORDS[a3][0] + " start with?", answer: a3 });
+
+    const i4 = Math.floor(Math.random() * (letters.length - 1));
+    qs.push({ group: "Letters", big: letters[i4] + " ➡️ ?", small: true, bigColor: "#ef476f",
+              prompt: "Which letter comes next?",
+              say: "Which letter comes after " + letters[i4] + "?", answer: letters[i4 + 1] });
+
+    /* --- numbers --- */
+    const n5 = 2 + Math.floor(Math.random() * 7);
+    qs.push({ group: "Numbers", big: pick(COUNT_EMOJIS).repeat(n5), small: true,
+              prompt: "How many? Press the number!",
+              say: "Count them. How many are there?", answer: String(n5) });
+
+    const n6 = 1 + Math.floor(Math.random() * 8);
+    qs.push({ group: "Numbers", big: n6 + " ➡️ ?", small: true, bigColor: "#e76f51",
+              prompt: "Which number comes next?",
+              say: "Which number comes after " + NUMBER_WORDS[n6] + "?", answer: String(n6 + 1) });
+
+    /* --- special keys --- */
+    qs.push({ group: "Keys", big: "🐸", prompt: "Press the big SPACE bar!",
+              say: "Press the big space bar!", answer: "SPACE" });
+
+    const d8 = pick(Object.keys(ARROWS));
+    qs.push({ group: "Keys", big: ARROWS[d8][0],
+              prompt: "Press the " + ARROWS[d8][1] + " arrow!",
+              say: "Press the " + ARROWS[d8][1] + " arrow!", answer: d8 });
+
+    /* --- typing words --- */
+    const w9 = pick(LITTLE_WORDS);
+    qs.push({ group: "Words", big: w9[1], word: w9[0], say: "Type the word " + w9[0] + "!" });
+
+    const w10 = pick(BIG_WORDS);
+    qs.push({ group: "Words", big: w10[1], word: w10[0], say: "Type the word " + w10[0] + "!" });
+
+    /* --- the other games --- */
+    const c11 = pick(Object.keys(COLOR_SQUARES));
+    qs.push({ group: "Games", big: COLOR_SQUARES[c11],
+              prompt: "Which letter paints " + PAINT_COLORS[c11][1] + "?",
+              say: "Which letter paints " + PAINT_COLORS[c11][1] + "?", answer: c11 });
+
+    const recipe12 = pick([RECIPES.pizza, RECIPES.cake]);
+    const k12 = pick(Object.keys(recipe12.toppings));
+    qs.push({ group: "Games", big: recipe12.toppings[k12][0],
+              prompt: "Which letter adds " + recipe12.toppings[k12][1] + "?",
+              say: "Which letter adds " + recipe12.toppings[k12][1] + "?", answer: k12 });
+
+    return qs;
+  }
+
+  function examDots() {
+    let s = "";
+    for (let i = 0; i < exam.qs.length; i++) {
+      const r = exam.results[i];
+      s += r ? (r.ok ? "✅" : "❌") : "⬜";
+    }
+    return s;
+  }
+
+  function renderExamWord() {
+    const q = exam.qs[exam.i];
+    let html = "";
+    for (let j = 0; j < q.word.length; j++) {
+      const cls = j < exam.li ? "done" : (j === exam.li ? "next" : "todo");
+      html += '<span class="' + cls + '">' + q.word[j] + "</span> ";
+    }
+    wordEl.innerHTML = html;
+  }
+
+  function showExamQ() {
+    const q = exam.qs[exam.i];
+    exam.firstTry = true;
+    exam.wrong = 0;
+    exam.li = 0;
+    exam.locked = false;
+    clearHints();
+    bigEl.classList.toggle("small", !!q.small);
+    showBig(q.big, q.bigColor);
+    if (q.word) renderExamWord();
+    else wordEl.textContent = q.prompt;
+    hintEl.textContent = "";
+    progEl.textContent = "🎓 " + (exam.i + 1) + " / " + exam.qs.length;
+    starsEl.classList.add("dots");
+    starsEl.textContent = examDots();
+    speak(q.say);
+  }
+
+  function examWrong(want) {
+    exam.firstTry = false;
+    exam.wrong++;
+    wobble();
+    gentleNo();
+    if (exam.wrong >= 3 && keyEls[want]) {
+      clearHints();
+      keyEls[want].classList.add("hint");
+      hintEl.textContent = "Look for the yellow key! 👇";
+    } else {
+      hintEl.textContent = "Try again!";
+    }
+  }
+
+  function examCorrect() {
+    const q = exam.qs[exam.i];
+    exam.results.push({ group: q.group, ok: exam.firstTry });
+    /* keys pressed during the little celebration must not be judged
+       against the next question, which isn't on screen yet */
+    exam.locked = true;
+    clearHints();
+    successSound();
+    centerBurst(exam.firstTry);
+    hintEl.textContent = exam.firstTry
+      ? PRAISE[Math.floor(Math.random() * PRAISE.length)]
+      : "Got it! 👍";
+    starsEl.textContent = examDots();
+    speak(exam.firstTry ? "Yes!" : "Got it!");
+    exam.i++;
+    setTimeout(() => {
+      if (mode !== "exam" || !exam) return;
+      if (exam.i >= exam.qs.length) finishExam();
+      else showExamQ();
+    }, 1500);
+  }
+
+  function handleExam(k) {
+    if (!exam || exam.locked) return;
+    const q = exam.qs[exam.i];
+    if (!q) return;
+
+    if (q.word) {
+      const want = q.word[exam.li];
+      if (k === want) {
+        popSound();
+        exam.li++;
+        if (exam.li >= q.word.length) examCorrect();
+        else renderExamWord();
+      } else if (/^[A-Z0-9]$/.test(k)) {
+        examWrong(want);
+      }
+      return;
+    }
+
+    if (k === q.answer) examCorrect();
+    else if (/^[A-Z0-9]$/.test(k) || ARROWS[k] || k === "SPACE") examWrong(q.answer);
+  }
+
+  function finishExam() {
+    const score = exam.results.filter(r => r.ok).length;
+    const total = exam.results.length;
+    const passed = score >= EXAM_PASS;
+
+    const groups = {};
+    exam.results.forEach(r => {
+      if (!groups[r.group]) groups[r.group] = { ok: 0, n: 0 };
+      groups[r.group].n++;
+      if (r.ok) groups[r.group].ok++;
+    });
+
+    if (score > (progress.examBest || 0)) progress.examBest = score;
+    if (passed) progress.examPassed = true;
+    saveProgress(progress);
+
+    exam = null;
+    clearHints();
+    clearStage();
+    bigEl.textContent = "";
+    btnBack.classList.remove("show");
+
+    const chips = Object.keys(groups).map(g => {
+      const { ok, n } = groups[g];
+      const cls = ok === n ? "good" : (ok * 2 < n ? "weak" : "");
+      return '<span class="exam-chip ' + cls + '">' + g + " " + ok + "/" + n + "</span>";
+    }).join("");
+
+    examCardEl.innerHTML =
+      '<div class="exam-emoji">' + (passed ? "🏆" : "🌱") + "</div>" +
+      "<h2>" + (passed ? "You passed!" : "Good try!") + "</h2>" +
+      '<div class="exam-score">' + score + " / " + total + "</div>" +
+      "<p>" + (passed
+        ? "Brilliant! You know your keyboard. 🎉"
+        : "Play the games a little more, then try again. You can do it!") + "</p>" +
+      '<div class="exam-breakdown">' + chips + "</div>" +
+      '<p class="exam-note">For grown-ups: a point is scored only when the answer ' +
+      "is right first time. " + EXAM_PASS + " out of " + total + " passes.</p>" +
+      '<div class="exam-actions">' +
+        '<button class="btn" id="exam-again">🎓 Try again</button>' +
+        '<button class="btn" id="exam-home">🏠 Back to games</button>' +
+      "</div>";
+
+    examMenuEl.classList.add("open");
+    document.getElementById("exam-again").addEventListener("click", startExam);
+    document.getElementById("exam-home").addEventListener("click", () => setMode("free"));
+
+    if (passed) centerBurst(true);
+    speak(passed
+      ? "Hooray! You passed the big test with " + score + " out of " + total + "!"
+      : "Good try! You got " + score + " out of " + total + ". Let's play some more!");
+  }
+
+  function startExam() {
+    exam = { qs: buildExam(), i: 0, results: [], firstTry: true, wrong: 0, li: 0 };
+    examMenuEl.classList.remove("open");
+    btnBack.textContent = "🏠 Stop test";
+    btnBack.classList.add("show");
+    showExamQ();
+  }
+
+  function openExamMenu() {
+    exam = null;
+    clearHints();
+    clearStage();
+    bigEl.textContent = "";
+    btnBack.classList.remove("show");
+    const best = progress.examBest || 0;
+    examCardEl.innerHTML =
+      '<div class="exam-emoji">🎓</div>' +
+      "<h2>The Big Test</h2>" +
+      "<p>" + EXAM_LENGTH + " questions from all the games —<br>" +
+      "letters, numbers, arrows, words, cooking and painting.</p>" +
+      (best
+        ? '<div class="exam-score">Best: ' + best + " / " + EXAM_LENGTH + "</div>" +
+          "<p>" + (progress.examPassed ? "Passed already! 🏆" : "Try to beat it!") + "</p>"
+        : "<p>Ready when you are!</p>") +
+      '<div class="exam-actions">' +
+        '<button class="btn" id="exam-start">▶️ Start the test</button>' +
+      "</div>";
+    examMenuEl.classList.add("open");
+    document.getElementById("exam-start").addEventListener("click", startExam);
+  }
+
+  function closeExam() {
+    exam = null;
+    examMenuEl.classList.remove("open");
+    starsEl.classList.remove("dots");
+  }
+
   /* ================= Input routing ================= */
 
   /* k is a normalized key id: "A".."Z", "0".."9", "SPACE", "LEFT" ... */
@@ -1938,6 +2295,8 @@
       playKitchen(k);
     } else if (mode === "paint") {
       playPaint(k);
+    } else if (mode === "exam" && exam) {
+      handleExam(k);
     }
   }
 
@@ -2001,6 +2360,7 @@
   document.getElementById("stage").addEventListener("pointerdown", function (e) {
     if (menuEl.classList.contains("open")) return;
     if (kitchenMenuEl.classList.contains("open")) return;
+    if (examMenuEl.classList.contains("open")) return;
     if (mode === "paint") return;          /* don't scatter confetti over the paper */
     burst(e.clientX, e.clientY, false);
     popSound();
@@ -2028,6 +2388,7 @@
   const btnTasks   = document.getElementById("btn-tasks");
   const btnKitchen = document.getElementById("btn-kitchen");
   const btnPaint   = document.getElementById("btn-paint");
+  const btnExam    = document.getElementById("btn-exam");
   const btnSound   = document.getElementById("btn-sound");
   const btnFull    = document.getElementById("btn-full");
 
@@ -2038,11 +2399,13 @@
     btnTasks.classList.toggle("active", m === "tasks");
     btnKitchen.classList.toggle("active", m === "kitchen");
     btnPaint.classList.toggle("active", m === "paint");
+    btnExam.classList.toggle("active", m === "exam");
     clearHints();
     clearStage();
     closeTaskMenu();
     closeKitchen();
     closePainting();
+    closeExam();
     btnBack.classList.remove("show");
     btnBack.textContent = "🏠 All Tasks";
     stopActiveTask();
@@ -2058,8 +2421,10 @@
       openTaskMenu();
     } else if (m === "kitchen") {
       openKitchenMenu();
-    } else {
+    } else if (m === "paint") {
       openPainting();
+    } else {
+      openExamMenu();
     }
   }
 
@@ -2068,6 +2433,7 @@
   btnTasks.addEventListener("click", () => setMode("tasks"));
   btnKitchen.addEventListener("click", () => setMode("kitchen"));
   btnPaint.addEventListener("click", () => setMode("paint"));
+  btnExam.addEventListener("click", () => setMode("exam"));
 
   btnSound.addEventListener("click", () => {
     soundOn = !soundOn;
