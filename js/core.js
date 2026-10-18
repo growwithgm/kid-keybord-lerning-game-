@@ -53,8 +53,9 @@ window.KB = window.KB || {};
      word only has to be added once.                            */
 
   KB.WORDS_3 = [["CAT","🐱"],["DOG","🐶"],["SUN","☀️"],["BUS","🚌"],["CUP","☕"],
-                ["HAT","🎩"],["BEE","🐝"],["PIG","🐷"],["EGG","🥚"],["CAR","🚗"],
-                ["BAT","🦇"],["FOX","🦊"],["COW","🐮"],["BED","🛏️"],["KEY","🔑"]];
+                ["HAT","🎩"],["BEE","🐝"],["OWL","🦉"],["EGG","🥚"],["CAR","🚗"],
+                ["BAT","🦇"],["FOX","🦊"],["COW","🐮"],["BED","🛏️"],["KEY","🔑"],
+                ["BAG","👜"],["MAP","🗺️"]];
 
   KB.WORDS_4 = [["FISH","🐟"],["STAR","⭐"],["MOON","🌙"],["CAKE","🎂"],["TREE","🌳"],
                 ["BIRD","🐦"],["FROG","🐸"],["DUCK","🦆"],["LION","🦁"],["BEAR","🐻"],
