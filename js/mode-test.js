@@ -14,13 +14,7 @@
 (function (KB) {
   "use strict";
 
-  const PASS = 9, LENGTH = 12;
-  const HOME = ["A", "S", "D", "F", "G", "H", "J", "K", "L"];
-  /* Only the keys a finger actually rests on: G and H are stretches
-     for the pointing fingers, so asking "which key is under your
-     pointing finger" with those in the list has two right answers. */
-  const HOME_RESTING = ["A", "S", "D", "F", "J", "K", "L"];
-  const ALL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const PASS = 5, LENGTH = 6;
 
   const JUNK = "XQZJWVK".split("");
 
@@ -32,110 +26,39 @@
     const q = [];
     const pick = KB.pick;
 
-    /* --- hands: which side does this key live on --- */
-    const h1 = pick(ALL);
-    q.push({
-      group: "Hands", face: h1,
-      ask: "Left hand or right hand? Press that arrow.",
-      say: "The letter " + h1 + ". Is it left hand or right hand? Press that arrow key.",
-      answer: KB.handOf(h1) === "L" ? "LEFT" : "RIGHT",
-      help: "Press the " + (KB.handOf(h1) === "L" ? "left" : "right") +
-            " arrow, in the bottom right corner."
-    });
+    /* 1 · press a letter you can see */
+    const a1 = pick("ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""));
+    q.push({ group: "Letters", face: a1, ask: "Press this letter",
+             say: "Press " + a1 + ".", answer: a1 });
 
-    /* --- hands: the bumpy key --- */
-    const bump = pick(["F", "J"]);
-    q.push({
-      group: "Hands", face: "⠿",
-      ask: "Press the " + (bump === "F" ? "LEFT" : "RIGHT") + " bumpy key",
-      say: "Feel for the " + (bump === "F" ? "left" : "right") +
-           " key with the little bump, and press it.",
-      answer: bump
-    });
+    /* 2 · the long bar */
+    q.push({ group: "Letters", face: "🐸", ask: "Press the long bar at the bottom",
+             say: "Press the big long bar at the bottom.", answer: "SPACE" });
 
-    /* --- hands: a key by finger name alone --- */
-    const fk = pick(HOME_RESTING);
-    const ff = KB.FINGER[fk];
-    q.push({
-      group: "Hands", face: "🤔",
-      ask: "Which key sits under your " + KB.HAND_NAMES[ff.hand] + " " +
-           KB.FINGER_NAMES[ff.finger] + " on the home row?",
-      say: "Which home key sits under your " + KB.HAND_NAMES[ff.hand] + " " +
-           KB.FINGER_NAMES[ff.finger] + "?",
-      answer: fk
-    });
+    /* 3 · a number */
+    const n3 = 1 + Math.floor(Math.random() * 9);
+    q.push({ group: "Letters", face: "⭐".repeat(n3), tiny: true,
+             ask: "How many stars? Press that number",
+             say: "Count the stars, then press that number.", answer: String(n3) });
 
-    /* --- words --- */
-    const w4 = pick(KB.WORDS_4);
-    q.push({ group: "Words", face: w4[1], word: w4[0], say: "Type the word " + w4[0].toLowerCase() + "." });
+    /* 4 · type a little word */
+    const w4 = pick(KB.WORDS_3);
+    q.push({ group: "Words", face: w4[1], word: w4[0],
+             say: "Type " + w4[0].toLowerCase() + "." });
 
-    const ph = pick(KB.PHRASES);
-    q.push({ group: "Words", face: ph[1], word: ph[0],
-             say: "Type " + ph[0].toLowerCase() + ". Do not forget the space bar." });
-
-    const nm = pick(KB.NAMES);
-    q.push({ group: "Words", face: nm[1], word: nm[0], shift: true,
-             say: "Type the name " + nm[0] + ". The first letter is big, so hold shift." });
-
-    /* --- fixing: the skill that matters most at this age --- */
-    const fx1 = pick(KB.WORDS_3);
+    /* 5 · rub the extra letters off */
+    const f5 = pick(KB.WORDS_3);
     let tail = "";
-    for (let i = 0; i < 2 + Math.floor(Math.random() * 2); i++) tail += pick(JUNK);
-    q.push({
-      group: "Fixing", face: fx1[1], fix: fx1[0], start: fx1[0] + tail,
-      say: "Too many letters! Rub them out until it says " + fx1[0].toLowerCase() + "."
-    });
+    for (let i = 0; i < 2; i++) tail += pick(JUNK);
+    q.push({ group: "Fixing", face: f5[1], fix: f5[0], start: f5[0] + tail,
+             say: "Too many letters! Press backspace until it says " + f5[0].toLowerCase() + "." });
 
-    const fx2 = pick(KB.WORDS_4);
-    let badLast = pick(JUNK);
-    while (badLast === fx2[0][fx2[0].length - 1]) badLast = pick(JUNK);
-    q.push({
-      group: "Fixing", face: fx2[1], fix: fx2[0], start: fx2[0].slice(0, -1) + badLast,
-      say: "The last letter is wrong. Fix it so it says " + fx2[0].toLowerCase() + "."
-    });
-
-    const fx3 = pick(KB.WORDS_4);
-    const at = 1 + Math.floor(Math.random() * (fx3[0].length - 2));
-    let badMid = pick(JUNK);
-    while (badMid === fx3[0][at]) badMid = pick(JUNK);
-    q.push({
-      group: "Fixing", face: fx3[1], fix: fx3[0],
-      start: fx3[0].slice(0, at) + badMid + fx3[0].slice(at + 1),
-      say: "A letter in the middle is wrong. Make it say " + fx3[0].toLowerCase() + "."
-    });
-
-    /* --- code --- */
-    q.push({
-      group: "Code", face: "↩️",
-      ask: "Which command turns the robot LEFT?",
-      say: "Which letter turns the robot to the left?",
-      answer: "L"
-    });
-
-    q.push({
-      group: "Code", face: "🖍️",
-      ask: "Which command puts the robot's pen down so it draws?",
-      say: "Which letter puts the pen down, so the robot draws as it moves?",
-      answer: "P"
-    });
-
-    /* --- the AI idea: can they apply a rule the robot was taught? --- */
-    const rule = pick([
-      { feat: "big",   box: 1, shown: ["a big red circle", "a big blue star"], test: "a big green square", ans: "1" },
-      { feat: "small", box: 2, shown: ["a small red star", "a small blue circle"], test: "a small yellow square", ans: "2" },
-      { feat: "red",   box: 1, shown: ["a red circle", "a red square"], test: "a red triangle", ans: "1" },
-      { feat: "blue",  box: 2, shown: ["a blue star", "a blue square"], test: "a blue circle", ans: "2" }
-    ]);
-    q.push({
-      group: "Robot brain", face: "🧠",
-      ask: "You taught the robot: " + rule.shown.join(" and ") + " both went in box " +
-           rule.box + ". Where will it put " + rule.test + "? Press 1 or 2.",
-      say: "You taught the robot that " + rule.shown[0] + " and " + rule.shown[1] +
-           " both go in box " + rule.box + ". Where will it put " + rule.test + "?",
-      answer: rule.ans,
-      help: "The robot copies what you taught it. Those were all " + rule.feat +
-            ", so it picks box " + rule.box + "."
-    });
+    /* 6 · rub one off and write the right one */
+    const f6 = pick(KB.WORDS_3);
+    let bad = pick(JUNK);
+    while (bad === f6[0][f6[0].length - 1]) bad = pick(JUNK);
+    q.push({ group: "Fixing", face: f6[1], fix: f6[0], start: f6[0].slice(0, -1) + bad,
+             say: "The last letter is wrong. Make it say " + f6[0].toLowerCase() + "." });
 
     return q;
   }
@@ -148,19 +71,17 @@
     KB.ui.hideHands();
     stage.innerHTML = "";
 
-    const best = (KB.state.test2 && KB.state.test2.best) || 0;
+    const best = (KB.state.test3 && KB.state.test3.best) || 0;
     const card = KB.el("div", "panel");
-    card.appendChild(KB.el("div", "panel-emoji", "🎓"));
-    card.appendChild(KB.el("h2", "title", "Lab Test"));
-    card.appendChild(KB.el("p", "lead",
-      LENGTH + " questions on the new skills: two hands, home keys, " +
-      "longer words, Shift, the robot's commands and how it learns."));
+    card.appendChild(KB.el("div", "panel-emoji", "⭐"));
+    card.appendChild(KB.el("h2", "title", "Star Test"));
+    card.appendChild(KB.el("p", "lead", "Just " + LENGTH + " little questions. Ready?"));
     if (best) {
       card.appendChild(KB.el("div", "score", "Best: " + best + " / " + LENGTH));
       card.appendChild(KB.el("p", "lead",
-        (KB.state.test2.passed ? "Passed already! 🏆" : "Try to beat it!")));
+        (KB.state.test3.passed ? "Passed already! 🏆" : "Try to beat it!")));
     }
-    const go = KB.el("button", "big-btn", "▶️ Start the test");
+    const go = KB.el("button", "big-btn", "▶️ Start");
     go.addEventListener("click", () => start(stage));
     card.appendChild(go);
     stage.appendChild(card);
@@ -177,7 +98,7 @@
       dots: KB.el("div", "dots")
     };
     stage.append(dom.big, dom.sub, dom.word, dom.note, dom.dots);
-    KB.ui.backButton("← Stop the test", () => showIntro(stage));
+    KB.ui.backButton("← Stop", () => showIntro(stage));
     showQ();
   }
 
@@ -234,7 +155,7 @@
     dom.big.classList.toggle("tiny", !!q.tiny || q.face.length > 2);
 
     if (q.word) {
-      dom.sub.textContent = q.shift ? "Type the name — big letter first!" : "Type the word";
+      dom.sub.textContent = "Type the word";
       renderWord();
       dom.word.style.display = "";
     } else if (q.fix) {
@@ -304,8 +225,8 @@
       if (r.ok) groups[r.group].ok++;
     });
 
-    const prev = KB.state.test2 || {};
-    KB.state.test2 = {
+    const prev = KB.state.test3 || {};
+    KB.state.test3 = {
       best: Math.max(prev.best || 0, score),
       passed: !!prev.passed || passed
     };
@@ -322,8 +243,8 @@
     card.appendChild(KB.el("h2", "title", passed ? "You passed!" : "Good try!"));
     card.appendChild(KB.el("div", "score", score + " / " + total));
     card.appendChild(KB.el("p", "lead", passed
-      ? "You really know this keyboard now. 🎉"
-      : "Play the drills a bit more, then come back and beat it."));
+      ? "You are brilliant at this! 🎉"
+      : "Have another play, then try again!"));
 
     const chips = KB.el("div", "chips");
     Object.keys(groups).forEach(g => {
@@ -334,14 +255,14 @@
     card.appendChild(chips);
 
     card.appendChild(KB.el("p", "fineprint",
-      "For grown-ups: a point is scored only when the answer is right first time. " +
-      PASS + " out of " + total + " passes. The weak chips show what to practise next."));
+      "For grown-ups: a star is only given when the answer is right first time. " +
+      PASS + " out of " + total + " passes."));
 
     const row = KB.el("div", "card-row tight");
     const again = KB.el("button", "big-btn", "🎓 Try again");
     again.addEventListener("click", () => start(stage));
-    const home = KB.el("button", "big-btn ghost", "🏠 Back to the lab");
-    home.addEventListener("click", () => KB.ui.go("hands"));
+    const home = KB.el("button", "big-btn ghost", "🏠 Home");
+    home.addEventListener("click", () => KB.ui.home());
     row.append(again, home);
     card.appendChild(row);
 
@@ -357,8 +278,9 @@
 
   KB.ui.register({
     id: "test",
-    icon: "🎓",
-    label: "Lab Test",
+    icon: "⭐",
+    label: "Star Test",
+    color: "#ffc300",
 
     start(stage) { showIntro(stage); },
     stop() { paper = null; },

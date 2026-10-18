@@ -55,32 +55,18 @@ body {
   flex: 0 0 auto;
 }
 
-#tabs { display: flex; gap: 7px; flex-wrap: wrap; }
-
-.tab {
-  border: none;
-  font-family: inherit;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 999px;
-  padding: 9px 15px;
-  font-size: .95rem;
-  background: #ffffffcc;
-  color: #6b6259;
-  box-shadow: 0 3px 8px rgba(0,0,0,.10);
-  white-space: nowrap;
-}
-.tab.on { background: var(--warm); color: #6b4b00; }
-
 #tools { display: flex; gap: 7px; }
+
+#homebtn { visibility: hidden; }
+#homebtn.show { visibility: visible; }
 
 .icon {
   border: none;
   cursor: pointer;
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 1.2rem;
+  width: 52px;
+  height: 52px;
+  font-size: 1.5rem;
   background: #ffffffcc;
   box-shadow: 0 3px 8px rgba(0,0,0,.10);
 }
@@ -104,6 +90,55 @@ body {
   box-shadow: 0 3px 8px rgba(0,0,0,.10);
 }
 #back.show { display: block; }
+
+/* ---------------- home screen ----------------
+   Six big picture buttons. A five-year-old should be able to
+   pick a game without reading anything.                      */
+
+.home-title {
+  font-size: clamp(1.8rem, 7vh, 3.2rem);
+  color: var(--accent);
+}
+.home-lead {
+  font-size: clamp(1rem, 3vh, 1.4rem);
+  font-weight: bold;
+  color: var(--ink-2);
+  margin-bottom: 4px;
+}
+
+.home-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  /* three across, two rows — a tidier shape than four and two */
+  max-width: 580px;
+}
+
+.home-card {
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  background: #fff;
+  border-radius: 26px;
+  width: clamp(120px, 17vw, 175px);
+  padding: 18px 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 6px 0 var(--c), 0 8px 18px rgba(0,0,0,.12);
+  transition: transform .12s;
+}
+.home-card:hover  { transform: translateY(-4px); }
+.home-card:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--c); }
+
+.home-icon { font-size: clamp(2.6rem, 8vh, 4rem); line-height: 1; }
+.home-name {
+  font-weight: bold;
+  font-size: clamp(.95rem, 2.5vh, 1.2rem);
+  color: var(--c);
+}
 
 /* ---------------- stage ---------------- */
 
@@ -129,8 +164,8 @@ body {
 .lead {
   color: var(--ink);
   font-weight: bold;
-  font-size: clamp(.9rem, 2.6vh, 1.15rem);
-  max-width: 640px;
+  font-size: clamp(1rem, 3vh, 1.35rem);
+  max-width: 620px;
   line-height: 1.45;
 }
 
@@ -158,7 +193,7 @@ body {
 .face-low { font-size: .5em; color: var(--ink-2); }
 
 .sub {
-  font-size: clamp(1.05rem, 3.6vh, 1.9rem);
+  font-size: clamp(1.2rem, 4.2vh, 2.2rem);
   font-weight: bold;
   color: var(--ink);
   max-width: 760px;
@@ -166,10 +201,11 @@ body {
 }
 
 .note {
-  font-size: clamp(.9rem, 2.6vh, 1.2rem);
+  font-size: clamp(1rem, 3vh, 1.45rem);
   color: var(--ink-2);
+  font-weight: bold;
   min-height: 1.4em;
-  max-width: 720px;
+  max-width: 640px;
   line-height: 1.4;
 }
 
@@ -276,10 +312,10 @@ body {
   font-family: inherit;
   cursor: pointer;
   background: var(--card);
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: 0 4px 12px rgba(0,0,0,.10);
-  width: 168px;
-  padding: 14px 10px 11px;
+  width: 158px;
+  padding: 16px 10px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -287,9 +323,9 @@ body {
   text-align: center;
 }
 .card.locked { opacity: .55; cursor: default; }
-.card-icon  { font-size: 2.3rem; line-height: 1; }
-.card-name  { font-weight: bold; color: #6b6259; font-size: .98rem; }
-.card-blurb { font-size: .78rem; color: var(--ink-2); line-height: 1.3; }
+.card-icon  { font-size: 2.9rem; line-height: 1; }
+.card-name  { font-weight: bold; color: #6b6259; font-size: 1.1rem; }
+.card-blurb { font-size: .82rem; color: var(--ink-2); line-height: 1.3; min-height: 1em; }
 .card-stars { font-size: .85rem; letter-spacing: 1px; min-height: 1.1em; }
 
 .big-btn {
@@ -349,30 +385,18 @@ body {
 }
 #hands.show { display: flex; }
 
-.hand-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.hand { display: flex; align-items: flex-end; gap: 5px; }
-.finger-row { display: flex; align-items: flex-end; gap: 5px; }
+.hand-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  opacity: .3;
+  transition: opacity .15s, transform .15s;
+}
+.hand-wrap.lit { opacity: 1; transform: scale(1.18) translateY(-6px); }
+.hand-emoji { font-size: clamp(2rem, 6vh, 3rem); line-height: 1; }
 
-.finger {
-  width: clamp(14px, 2.4vh, 20px);
-  height: clamp(34px, 6vh, 52px);
-  border-radius: 999px;
-  background: #ffffffcc;
-  border: 2px solid #0000000f;
-  transition: background .15s, transform .15s;
-}
-.finger.thumb {
-  height: clamp(22px, 4vh, 34px);
-  width: clamp(18px, 3vh, 26px);
-  align-self: flex-end;
-}
-.finger.lit {
-  background: var(--fc);
-  transform: translateY(-7px) scale(1.07);
-  box-shadow: 0 4px 10px rgba(0,0,0,.18);
-}
-
-.hand-label { font-size: .72rem; color: var(--ink-2); font-weight: bold; }
+.hand-label { font-size: .85rem; color: var(--ink-2); font-weight: bold; }
 
 /* ---------------- robot coder ---------------- */
 
@@ -387,15 +411,15 @@ body {
 }
 
 .cell {
-  width: clamp(34px, 7.2vh, 62px);
-  height: clamp(34px, 7.2vh, 62px);
+  width: clamp(44px, 10vh, 86px);
+  height: clamp(44px, 10vh, 86px);
   border-radius: 9px;
   background: #fffdf8;
   box-shadow: inset 0 0 0 2px #0000000a;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(1.1rem, 3.6vh, 2rem);
+  font-size: clamp(1.5rem, 5.4vh, 2.8rem);
   position: relative;
 }
 .cell.wall    { background: #c98f6a; box-shadow: inset 0 0 0 3px #a9714f; }
@@ -559,16 +583,13 @@ body {
 
 /* ---------------- smaller screens ---------------- */
 
-@media (max-width: 1100px) {
-  .tab { padding: 8px 11px; font-size: .84rem; }
-}
 @media (max-width: 880px) {
-  .tab { padding: 7px 9px; font-size: .75rem; }
-  .icon { width: 38px; height: 38px; font-size: 1rem; }
-  #back { top: 54px; }
+  .icon { width: 44px; height: 44px; font-size: 1.2rem; }
+  .home-card { width: 120px; padding: 13px 8px 10px; }
 }
-@media (max-height: 620px) {
+@media (max-height: 640px) {
   .stage { gap: 6px; }
-  .card { width: 140px; padding: 10px 8px 8px; }
-  .card-icon { font-size: 1.8rem; }
+  .card { width: 132px; padding: 11px 8px 8px; }
+  .card-icon { font-size: 2.1rem; }
+  .home-card { padding: 12px 8px 10px; }
 }

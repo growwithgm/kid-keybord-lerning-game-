@@ -21,7 +21,7 @@
 
   const HEX = { red: "#ef476f", blue: "#118ab2", yellow: "#ffc300", green: "#06d6a0" };
 
-  const TEACH_FIRST = 6, TEACH_MORE = 4, TEST_N = 4;
+  const TEACH_FIRST = 4, TEACH_MORE = 3, TEST_N = 2;
 
   let examples = [];      /* [{ item, box }] — the training set */
   let phase = null;       /* "teach" | "test" | "done" */
@@ -174,17 +174,15 @@
 
     stage.appendChild(KB.el("h2", "title", "Teach the Robot 🧠"));
     stage.appendChild(KB.el("p", "lead",
-      "The robot knows nothing yet. Sort the shapes into box <b>1</b> and box <b>2</b> " +
-      "any way you like — all the red ones together, or all the big ones. " +
-      "Then watch it try to guess your rule."));
+      "Put the shapes in box <b>1</b> or box <b>2</b> — any way you like. " +
+      "Then the robot tries to guess!"));
 
     const best = (KB.state.ai && KB.state.ai.best) || 0;
     if (best) {
-      stage.appendChild(KB.el("p", "lead",
-        "Your robot's best score so far: <b>" + best + "%</b>"));
+      stage.appendChild(KB.el("p", "lead", "Best so far: <b>" + best + "%</b>"));
     }
 
-    const go = KB.el("button", "big-btn", "▶️ Start teaching");
+    const go = KB.el("button", "big-btn", "▶️ Start");
     go.addEventListener("click", () => startTeaching(stage, TEACH_FIRST));
     stage.appendChild(go);
   }
@@ -207,8 +205,8 @@
     const it = queue[qi];
     dom.item.innerHTML = "";
     dom.item.appendChild(shapeNode(it));
-    dom.note.textContent = "Press 1 or 2 — you decide which box.";
-    say("Where does this " + describe(it) + " go? Press one or two.");
+    dom.note.textContent = "Press 1 or 2";
+    say("Where does this one go? Press one or two.");
   }
 
   function teachAnswer(box) {
@@ -223,9 +221,8 @@
     const n1 = countIn(1), n2 = countIn(2);
     if (!n1 || !n2) {
       const empty = n1 ? 2 : 1;
-      say("You put them all in one box! Give me some for box " + empty +
-          " so I can learn the difference.");
-      dom.note.textContent = "Teaching a few more…";
+      say("They all went in one box! Put some in box " + empty + " too.");
+      dom.note.textContent = "Put some in box " + empty + " too!";
       setTimeout(() => {
         if (phase !== "teach") return;
         queue = freshItems(3, examples); qi = 0; nextTeach();
@@ -242,7 +239,7 @@
     queue = freshItems(TEST_N, examples);
     qi = 0;
     testScore = 0; testTotal = 0;
-    say("Now let me try! I will guess, and you tell me if I am right.");
+    say("Now let me try to guess!");
     setTimeout(() => { if (phase === "test") nextTest(); }, 2200);
   }
 
@@ -252,15 +249,15 @@
     dom.item.innerHTML = "";
     dom.item.appendChild(shapeNode(it));
     setMeter(null);
-    dom.note.textContent = "The robot is thinking…";
-    say("Hmm… let me think about this " + describe(it) + ".");
+    dom.note.textContent = "thinking…";
+    say("Hmm, let me think.");
 
     setTimeout(() => {
       if (phase !== "test") return;
       guess = predict(it);
       setMeter(guess.confidence);
-      say("I think it goes in box " + guess.box + ". " + reasonFor(it, guess.box));
-      dom.note.textContent = "Was I right? Press 1 or 2 to show me where it really goes.";
+      say("I think box " + guess.box + "! " + reasonFor(it, guess.box));
+      dom.note.textContent = "Was I right? Press 1 or 2";
       lock = false;
     }, 1400);
   }
@@ -278,12 +275,12 @@
     if (right) {
       KB.sfx.great();
       KB.cheer(false);
-      say("I got it right! Thank you for teaching me.");
-      dom.note.textContent = "✅ Correct!";
+      say("I got it right! Thank you!");
+      dom.note.textContent = "✅ I was right!";
     } else {
       KB.sfx.nope();
-      say("Oops, I was wrong. Thank you — now I know this one goes in box " + box + ".");
-      dom.note.textContent = "❌ Wrong — and now it has learned.";
+      say("Oops, I was wrong. Now I know!");
+      dom.note.textContent = "❌ I was wrong — now I know!";
     }
 
     lock = true;
@@ -310,12 +307,9 @@
       KB.save();
     }
 
-    say("I got " + testScore + " out of " + testTotal + " right! " +
-        "I have " + examples.length + " examples now. Teach me more and I will get better.");
+    say("I got " + testScore + " out of " + testTotal + " right! Teach me more and I get better.");
 
-    dom.note.innerHTML =
-      "<b>" + testScore + " / " + testTotal + "</b> right this round &nbsp;·&nbsp; " +
-      examples.length + " examples learned &nbsp;·&nbsp; " + pct + "% overall";
+    dom.note.innerHTML = "<b>" + testScore + " / " + testTotal + "</b> right!";
 
     const stage = document.getElementById("stage");
     const row = KB.el("div", "card-row tight");
@@ -335,7 +329,8 @@
   KB.ui.register({
     id: "ai",
     icon: "🧠",
-    label: "Teach the Robot",
+    label: "Teach Robot",
+    color: "#f77f00",
 
     start(stage) { showIntro(stage); },
     stop() { phase = null; queue = []; },

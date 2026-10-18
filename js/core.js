@@ -121,10 +121,10 @@ window.KB = window.KB || {};
   };
 
   const ROW_WORDS = {
-    numbers: "the top row of numbers",
-    top:     "the row just above your home keys",
-    home:    "the middle row, where your fingers rest",
-    bottom:  "the bottom row of letters"
+    numbers: "the numbers along the top",
+    top:     "the top row of letters",
+    home:    "the middle row",
+    bottom:  "the bottom row"
   };
 
   function rowOf(key) {
@@ -133,19 +133,28 @@ window.KB = window.KB || {};
   }
 
   KB.whereIs = function (key) {
-    if (key === "SPACE") return "the long bar along the bottom — press it with a thumb";
-    if (key === "ENTER") return "the big enter key on the right";
-    if (key === "BACK")  return "backspace, up in the top right corner";
+    if (key === "SPACE") return "the long bar at the bottom";
+    if (key === "ENTER") return "the big enter key";
+    if (key === "BACK")  return "the top right corner";
     if (key === "LEFT" || key === "RIGHT" || key === "UP" || key === "DOWN") {
-      return "the little arrow keys in the bottom right corner";
+      return "the little arrows at the bottom right";
     }
     const row = rowOf(key);
     if (!row) return "";
-    /* the keys are printed in lower case, so say it that way */
-    const label = row === "numbers" ? key : "a small " + key.toLowerCase();
-    let s = "look for " + label + " on " + ROW_WORDS[row];
-    if (key === "F" || key === "J") s += " — it is the one with the tiny bump on it";
-    return s;
+    if (row === "numbers") return "the numbers along the top";
+    if (key === "F" || key === "J") return "the key with the tiny bump";
+    return ROW_WORDS[row];
+  };
+
+  /* Short, spoken help: which hand, and the small letter to look
+     for. No finger names — that is a lot of words for a little
+     person. Her eyes go to the real keyboard, not to the screen. */
+  KB.fingerHint = function (key) {
+    const f = KB.FINGER[key];
+    if (key === "SPACE") return "Use your thumb on the long bar at the bottom.";
+    const small = /^[A-Z]$/.test(key) ? " Look for a small " + key.toLowerCase() + "." : "";
+    if (!f) return small.trim();
+    return "It is on your " + KB.HAND_NAMES[f.hand] + " hand." + small;
   };
 
   /* The Chromebook prints its letters in lower case, so when we
@@ -154,14 +163,6 @@ window.KB = window.KB || {};
   KB.keyFace = function (key) {
     if (!/^[A-Z]$/.test(key)) return key;
     return '<b class="face-up">' + key + '</b><b class="face-low">' + key.toLowerCase() + "</b>";
-  };
-  KB.fingerHint = function (key) {
-    const f = KB.FINGER[key];
-    const where = KB.whereIs(key);
-    if (!f) return where ? (where.charAt(0).toUpperCase() + where.slice(1)) + "." : "";
-    if (f.hand === "T") return "Use a thumb on the long bar at the bottom.";
-    return "Use your " + KB.HAND_NAMES[f.hand] + " hand, " +
-           KB.FINGER_NAMES[f.finger] + " — " + where + ".";
   };
 
   KB.handOf = function (key) {

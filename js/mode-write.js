@@ -41,7 +41,7 @@
 
   function readItOut() {
     if (!text.trim()) {
-      dom.hint.textContent = "Type some letters first, then press Enter.";
+      dom.hint.textContent = "Type some letters first!";
       KB.speak("Type some letters first.");
       return;
     }
@@ -61,13 +61,12 @@
       KB.state.spelled = seen;
       KB.save();
       dom.found.textContent = Object.keys(seen).length
-        ? "⭐ words you have spelled: " + Object.keys(seen).length
+        ? "⭐ " + Object.keys(seen).length + " words so far"
         : "";
     } else {
       dom.picture.textContent = "🔤";
       dom.picture.classList.remove("pop");
-      dom.hint.textContent = "I read it out — that one is not a word I know. " +
-                             "Use ⌫ Backspace to change a letter and try again.";
+      dom.hint.textContent = "Not a word I know. Press ⌫ and try again.";
       KB.sfx.pop();
       KB.speak(text.trim().toLowerCase());
     }
@@ -84,7 +83,8 @@
   KB.ui.register({
     id: "write",
     icon: "⌨️",
-    label: "Magic Writing",
+    label: "Write",
+    color: "#8b5cf6",
 
     start(stage) {
       text = "";
@@ -103,19 +103,17 @@
       };
 
       dom.keys.innerHTML =
-        '<span class="cmd"><b>letters</b> write</span>' +
-        '<span class="cmd"><b>space</b> gap</span>' +
-        '<span class="cmd"><b>Backspace</b> rub out one letter</span>' +
-        '<span class="cmd go"><b>Enter</b> read it out loud</span>';
+        '<span class="cmd"><b>⌫</b> rubs out</span>' +
+        '<span class="cmd go"><b>Enter</b> reads it out loud</span>';
 
       const seen = KB.state.spelled || {};
       dom.found.textContent = Object.keys(seen).length
-        ? "⭐ words you have spelled: " + Object.keys(seen).length
+        ? "⭐ " + Object.keys(seen).length + " words so far"
         : "";
 
       stage.append(dom.picture, dom.line, dom.count, dom.hint, dom.found, dom.keys);
       render();
-      KB.speak("Write anything you like. Press enter and I will read it out.");
+      KB.speak("Type anything you like! Then press enter and I will read it.");
     },
 
     stop() { text = ""; },
@@ -124,10 +122,7 @@
       if (k === "ENTER") { readItOut(); return; }
 
       if (k === "BACK") {
-        if (!text.length) {
-          dom.hint.textContent = "Nothing to rub out yet.";
-          return;
-        }
+        if (!text.length) return;
         clearPicture();
         text = text.slice(0, -1);
         KB.sfx.pop();
@@ -137,7 +132,7 @@
 
       if (k === "SPACE" || /^[A-Z0-9]$/.test(k)) {
         if (text.length >= MAX) {
-          dom.hint.textContent = "That is a long one! Press Enter to hear it.";
+          dom.hint.textContent = "Press Enter to hear it!";
           return;
         }
         clearPicture();

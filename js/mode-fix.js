@@ -17,8 +17,8 @@
 
   const LEVELS = [
     {
-      id: "f1", icon: "🧽", name: "Rub it out", need: 4,
-      blurb: "Too many letters at the end — take them off.",
+      id: "f1", icon: "🧽", name: "Rub it out", need: 3,
+      blurb: "too many letters",
       make(word) {
         let extra = "";
         const n = 2 + Math.floor(Math.random() * 2);
@@ -28,35 +28,24 @@
       say: "Too many letters! Press backspace until it says the word."
     },
     {
-      id: "f2", icon: "✏️", name: "Last one wrong", need: 4,
-      blurb: "The last letter is wrong. Rub it out and type the right one.",
+      id: "f2", icon: "✏️", name: "Last one wrong", need: 3,
+      blurb: "rub it out, write it again",
       make(word) {
         let bad = KB.pick(JUNK);
         while (bad === word[word.length - 1]) bad = KB.pick(JUNK);
         return word.slice(0, -1) + bad;
       },
-      say: "The last letter is wrong. Rub it out, then type the right one."
+      say: "The last letter is wrong. Rub it out and write the right one."
     },
     {
-      id: "f3", icon: "➕", name: "Finish it", need: 4,
-      blurb: "Some letters are missing — type the rest.",
+      id: "f3", icon: "➕", name: "Finish it", need: 3,
+      blurb: "letters are missing",
       make(word) {
         const keep = 1 + Math.floor(Math.random() * (word.length - 2));
         return word.slice(0, keep);
       },
-      say: "It is not finished. Type the letters that are missing."
+      say: "It is not finished. Write the letters that are missing."
     },
-    {
-      id: "f4", icon: "🔎", name: "Wrong in the middle", need: 4,
-      blurb: "A letter in the middle is wrong. Go back and fix it.",
-      make(word) {
-        const at = 1 + Math.floor(Math.random() * (word.length - 2));
-        let bad = KB.pick(JUNK);
-        while (bad === word[at]) bad = KB.pick(JUNK);
-        return word.slice(0, at) + bad + word.slice(at + 1);
-      },
-      say: "A letter in the middle is wrong. Rub back to it, then type the rest."
-    }
   ];
 
   let level = null, queue = null, qi = 0, text = "", dom = null, lock = false, clean = 0, touched = 0;
@@ -80,8 +69,7 @@
     stage.innerHTML = "";
     stage.appendChild(KB.el("h2", "title", "Fix It ✏️"));
     stage.appendChild(KB.el("p", "lead",
-      "The word is written wrong. Use <b>⌫ Backspace</b> to rub out, " +
-      "and the letter keys to write — until it matches the picture."));
+      "The word is wrong. Use <b>⌫</b> to rub out and the letters to write."));
 
     const row = KB.el("div", "card-row");
     LEVELS.forEach((lv, idx) => {
@@ -89,7 +77,7 @@
       const c = KB.el("button", "card" + (unlocked ? "" : " locked"));
       c.innerHTML = '<span class="card-icon">' + (unlocked ? lv.icon : "🔒") + "</span>" +
                     '<span class="card-name">' + lv.name + "</span>" +
-                    '<span class="card-blurb">' + (unlocked ? lv.blurb : "Clear the one before") + "</span>" +
+                    '<span class="card-blurb">' + (unlocked ? lv.blurb : "") + "</span>" +
                     '<span class="card-stars">' + stars(lv.id) + "</span>";
       if (unlocked) c.addEventListener("click", () => startLevel(stage, lv));
       row.appendChild(c);
@@ -99,8 +87,10 @@
 
   /* ---------------- play ---------------- */
 
+  /* three-letter words only — fixing is the hard part here, the
+     word itself should not be */
   function wordPool() {
-    return KB.WORDS_3.concat(KB.WORDS_4);
+    return KB.WORDS_3;
   }
 
   function startLevel(stage, lv) {
@@ -117,9 +107,7 @@
       dots:    KB.el("div", "dots"),
       keys:    KB.el("div", "cmd-help")
     };
-    dom.keys.innerHTML =
-      '<span class="cmd"><b>Backspace</b> rub out one letter</span>' +
-      '<span class="cmd"><b>letters</b> write</span>';
+    dom.keys.innerHTML = '<span class="cmd"><b>⌫ Backspace</b> rubs out one letter</span>';
     stage.append(dom.picture, dom.target, dom.line, dom.note, dom.dots, dom.keys);
     KB.ui.backButton("← All levels", () => showMenu(stage));
     showOne(true);
@@ -144,7 +132,7 @@
     touched = 0;
     lock = false;
     dom.picture.textContent = emoji;
-    dom.target.innerHTML = "it should say <b>" + word + "</b>";
+    dom.target.innerHTML = "make it say <b>" + word + "</b>";
     dom.note.textContent = "";
     dom.dots.textContent = "✏️ " + (qi + 1) + " / " + queue.length;
     render();
@@ -177,7 +165,7 @@
     dom.picture.textContent = "🏅";
     dom.target.textContent = level.name + " cleared!";
     dom.line.innerHTML = "";
-    dom.note.textContent = clean + " of " + queue.length + " fixed without any extra rubbing out.";
+    dom.note.textContent = clean + " of " + queue.length + " fixed in one go!";
     dom.dots.textContent = "";
     KB.ui.hideHands();
     KB.speak("Level cleared!");
@@ -191,14 +179,13 @@
     let i = 0;
     while (i < text.length && i < want.length && text[i] === want[i]) i++;
     if (text.length > i) {
-      const hint = "Press ⌫ Backspace — " + KB.whereIs("BACK") + ".";
-      dom.note.textContent = hint;
-      KB.speak("Press backspace to rub out the wrong letter.");
+      dom.note.textContent = "Press ⌫ to rub out.";
+      KB.speak("Press backspace. It is in the top right corner.");
     } else {
       const next = want[i];
-      dom.note.textContent = "Now type " + next + ". " + KB.fingerHint(next);
+      dom.note.textContent = "Now press " + next + ".";
       KB.ui.showHands(next);
-      KB.speak("Now type " + next + ".");
+      KB.speak("Now press " + next + ". " + KB.fingerHint(next));
     }
   }
 
@@ -206,6 +193,7 @@
     id: "fix",
     icon: "✏️",
     label: "Fix It",
+    color: "#ef476f",
 
     start(stage) { showMenu(stage); },
     stop() { queue = null; level = null; },
@@ -214,7 +202,7 @@
       if (!queue || lock) return;
 
       if (k === "BACK") {
-        if (!text.length) { dom.note.textContent = "Nothing left to rub out."; return; }
+        if (!text.length) return;
         text = text.slice(0, -1);
         touched++;
         KB.sfx.pop();

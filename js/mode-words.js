@@ -16,12 +16,9 @@
   "use strict";
 
   const LEVELS = [
-    { id: "w3",  name: "Three Letters", icon: "🐱", need: 5, blurb: "CAT, DOG, SUN…",      words: () => KB.WORDS_3 },
-    { id: "w4",  name: "Four Letters",  icon: "🐟", need: 5, blurb: "FISH, STAR, MOON…",   words: () => KB.WORDS_4 },
-    { id: "w5",  name: "Five Letters",  icon: "🐴", need: 5, blurb: "HORSE, TRAIN, ROBOT…", words: () => KB.WORDS_5 },
-    { id: "wsp", name: "Space Bar",     icon: "🐈", need: 4, blurb: "Two words — mind the gap!", words: () => KB.PHRASES },
-    { id: "wsh", name: "Shift Power",   icon: "🔼", need: 4, blurb: "Hold Shift for a BIG letter",
-      shift: true, words: () => KB.NAMES }
+    { id: "w3",  name: "3 letters", icon: "🐱", need: 3, blurb: "CAT · DOG · SUN",  words: () => KB.WORDS_3 },
+    { id: "w4",  name: "4 letters", icon: "🐟", need: 3, blurb: "FISH · STAR",      words: () => KB.WORDS_4 },
+    { id: "wsp", name: "two words", icon: "🐈", need: 3, blurb: "mind the gap!",    words: () => KB.PHRASES }
   ];
 
   let level = null, queue = null, wi = 0, typed = "", wrongs = 0, clean = 0, lock = false, dom = null;
@@ -36,10 +33,9 @@
     KB.ui.hideHands();
     KB.ui.backButton(null);
     stage.innerHTML = "";
-    stage.appendChild(KB.el("h2", "title", "Word Lab 📖"));
+    stage.appendChild(KB.el("h2", "title", "Words 📖"));
     stage.appendChild(KB.el("p", "lead",
-      "Copy the word. If a letter comes out wrong it stays on the screen — " +
-      "rub it out with <b>⌫ Backspace</b> and try that one again."));
+      "Copy the word. Wrong letter? Press <b>⌫</b> to rub it out."));
 
     const row = KB.el("div", "card-row");
     LEVELS.forEach((lv, idx) => {
@@ -48,7 +44,7 @@
       const c = KB.el("button", "card" + (open ? "" : " locked"));
       c.innerHTML = '<span class="card-icon">' + (open ? lv.icon : "🔒") + "</span>" +
                     '<span class="card-name">' + lv.name + "</span>" +
-                    '<span class="card-blurb">' + (open ? lv.blurb : "Clear the one before") + "</span>" +
+                    '<span class="card-blurb">' + (open ? lv.blurb : "") + "</span>" +
                     '<span class="card-stars">' + "⭐".repeat(Math.min(n, 3)) +
                     "☆".repeat(Math.max(3 - n, 0)) + "</span>";
       if (open) c.addEventListener("click", () => startLevel(stage, lv));
@@ -72,10 +68,7 @@
       dots:    KB.el("div", "dots"),
       keys:    KB.el("div", "cmd-help")
     };
-    dom.keys.innerHTML =
-      '<span class="cmd"><b>letters</b> write</span>' +
-      '<span class="cmd"><b>Backspace</b> rub out a wrong letter</span>' +
-      (lv.shift ? '<span class="cmd"><b>Shift</b> + letter = BIG letter</span>' : "");
+    dom.keys.innerHTML = '<span class="cmd"><b>⌫ Backspace</b> rubs out</span>';
     stage.append(dom.picture, dom.word, dom.note, dom.dots, dom.keys);
     KB.ui.backButton("← All levels", () => showMenu(stage));
     showWord(true);
@@ -122,18 +115,15 @@
     const [w, emoji] = queue[wi];
     dom.picture.textContent = emoji;
     render();
-    dom.note.textContent = level.shift
-      ? "The first letter is BIG — hold Shift with your other hand."
-      : "";
+    dom.note.textContent = "";
     dom.dots.textContent = "📖 " + (wi + 1) + " / " + queue.length;
     KB.ui.hideHands();
     if (fresh) KB.speak("Type the word " + w.toLowerCase() + ".");
   }
 
   function askForBackspace() {
-    dom.note.textContent = "That one is wrong — press ⌫ Backspace to rub it out. It is " +
-                           KB.whereIs("BACK") + ".";
-    KB.speak("That letter is wrong. Press backspace to rub it out.");
+    dom.note.textContent = "Oops! Press ⌫ to rub it out.";
+    KB.speak("Oops! Press backspace to rub it out. It is in the top right corner.");
   }
 
   function wordDone() {
@@ -161,7 +151,7 @@
     KB.cheer(true);
     dom.picture.textContent = "🏅";
     dom.word.textContent = level.name + " cleared!";
-    dom.note.textContent = clean + " of " + queue.length + " typed with no mistakes at all.";
+    dom.note.textContent = clean + " of " + queue.length + " with no mistakes!";
     dom.dots.textContent = "";
     KB.ui.hideHands();
     KB.speak("Level cleared!");
@@ -172,16 +162,17 @@
   KB.ui.register({
     id: "words",
     icon: "📖",
-    label: "Word Lab",
+    label: "Words",
+    color: "#06d6a0",
 
     start(stage) { showMenu(stage); },
     stop() { queue = null; level = null; },
 
-    onKey(k, mod) {
+    onKey(k) {
       if (!queue || lock) return;
 
       if (k === "BACK") {
-        if (!typed.length) { dom.note.textContent = "Nothing to rub out yet."; return; }
+        if (!typed.length) return;
         typed = typed.slice(0, -1);
         KB.sfx.pop();
         KB.ui.hideHands();
@@ -199,11 +190,7 @@
       const w = target();
       if (typed.length >= w.length) { askForBackspace(); return; }
 
-      /* in the Shift level the case matters, so keep what was really typed */
-      let ch;
-      if (k === "SPACE") ch = " ";
-      else if (level.shift) ch = mod.shift ? k : k.toLowerCase();
-      else ch = k;
+      const ch = (k === "SPACE") ? " " : k;
 
       typed += ch;
       const want = w[typed.length - 1];
@@ -224,16 +211,12 @@
       void dom.word.offsetWidth;
       dom.word.classList.add("shake");
 
-      if (level.shift && ch.toUpperCase() === want.toUpperCase() && want === want.toUpperCase()) {
-        dom.note.textContent = "Almost! That needs to be a BIG " + want +
-                               " — rub it out, hold Shift, and press it again.";
-        KB.speak("Almost! Rub it out, then hold shift and press " + want + ".");
-      } else if (wrongs >= 2) {
-        dom.note.textContent = "Rub it out with ⌫ Backspace, then press " +
-                               (want === " " ? "the space bar" : want) + ". " +
-                               KB.fingerHint(want === " " ? "SPACE" : want.toUpperCase());
-        KB.ui.showHands(want === " " ? "SPACE" : want.toUpperCase());
-        KB.speak("Rub it out, then press " + (want === " " ? "the space bar" : want) + ".");
+      if (wrongs >= 2) {
+        const wantKey = want === " " ? "SPACE" : want;
+        dom.note.textContent = "Press ⌫, then " + (want === " " ? "the long bar" : want) + ".";
+        KB.ui.showHands(wantKey);
+        KB.speak("Rub it out, then press " + (want === " " ? "the space bar" : want) + ". " +
+                 KB.fingerHint(wantKey));
       } else {
         askForBackspace();
       }
