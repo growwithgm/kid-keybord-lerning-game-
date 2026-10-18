@@ -202,7 +202,63 @@ body {
 .word .done { color: var(--good); }
 .word .next { color: var(--bad); text-decoration: underline; }
 .word .todo { color: #cfc7bf; }
+.word .bad  { color: #fff; background: var(--bad); border-radius: 7px; padding: 0 .1em; }
 .word .gap  { opacity: .55; }
+
+/* ---------------- writing and fixing ---------------- */
+
+.write-line, .fix-line {
+  font-size: clamp(1.9rem, 8vh, 4rem);
+  font-weight: bold;
+  letter-spacing: .1em;
+  line-height: 1.25;
+  max-width: 94%;
+  min-height: 1.3em;
+  word-break: break-word;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.write-line .ch { display: inline-block; animation: popin .22s ease; }
+.write-line .ch.space { width: .45em; }
+.write-line .ch.ok  { color: var(--good); }
+.write-line .ch.bad { color: #fff; background: var(--bad); border-radius: 7px; padding: 0 .12em; }
+
+@keyframes popin {
+  0%   { transform: translateY(-26%) scale(.5); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+
+.caret {
+  display: inline-block;
+  width: .09em;
+  height: .95em;
+  background: var(--accent);
+  margin-left: .06em;
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.write-picture, .fix-picture {
+  font-size: clamp(2.4rem, 11vh, 4.6rem);
+  line-height: 1;
+  min-height: 1.1em;
+}
+.write-picture.pop { animation: popin .4s ease; }
+
+.write-count, .write-found {
+  font-size: clamp(.74rem, 1.9vh, .88rem);
+  color: var(--ink-2);
+  min-height: 1.2em;
+}
+
+.fix-target {
+  font-size: clamp(.95rem, 2.8vh, 1.25rem);
+  color: var(--ink-2);
+}
+.fix-target b { color: var(--accent); font-size: 1.15em; letter-spacing: .08em; }
 
 /* ---------------- cards ---------------- */
 

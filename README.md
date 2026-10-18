@@ -18,7 +18,32 @@ Chromebook.
 
 ## What is in it
 
-Five modes, left to right as a learning path.
+Seven modes, left to right as a learning path. **Writing and fixing come
+first**; the coding modes sit at the end, on purpose — see *Why writing before
+code* below.
+
+### ⌨️ Magic Writing
+A blank page. Whatever the child presses appears, **Backspace** rubs it out,
+and **Enter** makes the computer read it aloud.
+
+The hook is the picture: spell a word the game knows and it appears. Spell it
+wrong and it does not — so the child goes back and fixes it themselves. Nothing
+here is marked wrong and no key is ever refused; it is a safe place to write,
+notice a mistake, and rub it out.
+
+### ✏️ Fix It
+One idea, four levels: here is the word it should say, here is what is actually
+written — make them match.
+
+| Level | What is broken |
+|-------|----------------|
+| **Rub it out** | Junk letters on the end — Backspace only |
+| **Last one wrong** | Rub out one, type the right one |
+| **Finish it** | Letters missing — type the rest |
+| **Wrong in the middle** | Go back past the good letters, then retype |
+
+This is what the UK Year 1 computing curriculum calls *adding and removing
+text*, and it is the skill a child needs before anything else on a computer.
 
 ### ✋ Two Hands
 The step that comes after knowing where the letters are: knowing *whose* key it
@@ -31,12 +56,14 @@ is. Nothing here is timed — at this age it is about awareness, not speed.
 | **Home Keys** | A S D F · J K L, one at a time, with the right finger shown |
 
 ### 📖 Word Lab
-Version 1's test found exactly one weak spot — typing words — so this mode
-climbs one rung at a time and each level unlocks the next.
+Copy the word, one rung at a time: three letters → four → five → **two words
+with a space** → **Shift Power**, where a capital needs the other hand on Shift.
+Each level unlocks the next.
 
-Three letters → four letters → five letters → **two words with a space** →
-**Shift Power**, where a capital needs the other hand holding Shift. That last
-one is the first time both hands have to work together.
+**A wrong letter lands on the screen in red and stays there** until the child
+rubs it out. An earlier build quietly refused the wrong key, which meant the
+mistake never appeared and Backspace was never needed — the game was doing the
+noticing. Now the child does.
 
 ### 🤖 Robot Coder
 Real programming, typed on a real keyboard. The child writes a line of commands,
@@ -75,15 +102,41 @@ it, so the lessons land by themselves — more examples make it better, and it c
 still be wrong. Teach it only one box and it will say so and ask for the other.
 
 ### 🎓 Lab Test
-Twelve questions over the new ground: which hand owns a key, the bumps, the home
-keys, a four- and a five-letter word, a phrase with a space, a name with Shift,
-the robot's commands, the repeat shortcut, and one question about what a robot
-will do with what it was taught.
+Twelve questions over the new ground, weighted the same way the modes are:
+three on hands, three on typing words, **three on fixing broken text**, two on
+the robot's commands, and one on what a robot will do with what it was taught.
 
 A point is scored **only when the answer is right first time**, but nobody gets
 stuck: after two misses the hint names the hand, the finger and where to look.
 Passing is **9 out of 12**, and the result page breaks the score down by skill
-(Hands, Words, Code, Robot brain) so a grown-up can see what to practise next.
+(Hands, Words, Fixing, Code, Robot brain) so a grown-up can see what to
+practise next.
+
+---
+
+## Why writing before code
+
+Version 1's test came back 11/12, with the only weak spot in typing words, so
+the first build of v2 went for robot programming. That was the wrong order, and
+the research says so:
+
+- **TypingClub's own teaching guide** says to leave Backspace enabled for
+  beginners, because not being able to correct a mistake is what makes children
+  give up. Disabling it is an *advanced* challenge, not a starting point.
+- **Oak National Academy** (UK national curriculum) gives *adding and removing
+  text* a whole Year 1 lesson, before any programming. It also names the common
+  misconception worth heading off: children assume Backspace deletes the whole
+  sentence.
+- Classroom practice is the same shape as *Fix It*: type some junk, then take it
+  out again one letter at a time.
+
+So the typing and editing modes come first and the coding modes went to the end.
+Robot Coder and Teach the Robot are still there — the path to programming is the
+long-term plan — they are just no longer the first thing the child meets.
+
+One honest caveat: a recent (small, short-term) study of five-year-olds found
+**handwriting beat typing** for early letter and word learning. This game
+teaches the *keyboard*, not reading and writing. Keep the pencil going too.
 
 ---
 
@@ -150,8 +203,10 @@ css/style.css       all the styling
 js/core.js          storage, sound, speech, sparkles, the finger map,
                     and the Chromebook-aware "where is that key" hints
 js/ui.js            the shell: tabs, stage, hands guide, key handling
-js/mode-hands.js    ✋ Two Hands
+js/mode-write.js    ⌨️ Magic Writing
+js/mode-fix.js      ✏️ Fix It
 js/mode-words.js    📖 Word Lab
+js/mode-hands.js    ✋ Two Hands
 js/mode-robot.js    🤖 Robot Coder
 js/mode-ai.js       🧠 Teach the Robot
 js/mode-test.js     🎓 Lab Test
@@ -159,13 +214,14 @@ js/main.js          boot
 ```
 
 Each mode file registers itself with `KB.ui.register({ id, icon, label, start,
-stop, onKey })`, so adding a sixth mode means adding one file and one script
-tag. The files are plain `<script>` tags rather than ES modules on purpose: it
+stop, onKey })`, so adding another mode means adding one file and one script
+tag. The order of the script tags in `index.html` is the order of the tabs. The files are plain `<script>` tags rather than ES modules on purpose: it
 works on GitHub Pages and straight off the disk, with nothing to build.
 
 ## What could come next
 
-- Sentences, then punctuation and the question mark
+- Arrow keys to move the cursor, so a mistake can be fixed without rubbing out
+  everything after it
+- Short sentences, then the full stop and the question mark
 - `IF` and `REPEAT UNTIL` for the robot — conditionals after loops
 - Letting the child train the robot on their own drawings instead of shapes
-- A two-player race on the same keyboard

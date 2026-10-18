@@ -1,81 +1,56 @@
 /* ============================================================
    mode-words.js — "Word Lab"
 
-   The one weak spot in the last test was typing words, so this
-   mode climbs one rung at a time: three letters, four, five,
-   then two words with a space, then capitals with Shift — the
-   first time both hands have to work together.
+   Typing words, one rung at a time: three letters, four, five,
+   two words with a space, then capitals with Shift.
+
+   The important part is what happens when the child gets a
+   letter wrong. Version 1 of this mode quietly refused the key,
+   so the mistake never appeared and Backspace was never needed
+   — the game was doing the noticing. Now the wrong letter lands
+   on the screen in red and stays there until the child rubs it
+   out, which is how typing actually works and is what the UK
+   Year 1 curriculum calls adding and removing text.
    ============================================================ */
 (function (KB) {
   "use strict";
 
   const LEVELS = [
-    {
-      id: "w3", name: "Three Letters", icon: "🐱", need: 5,
-      blurb: "CAT, DOG, SUN…",
-      words: [["CAT","🐱"],["DOG","🐶"],["SUN","☀️"],["BUS","🚌"],["CUP","☕"],
-              ["HAT","🎩"],["BEE","🐝"],["PIG","🐷"],["EGG","🥚"],["CAR","🚗"],
-              ["BAT","🦇"],["FOX","🦊"]]
-    },
-    {
-      id: "w4", name: "Four Letters", icon: "🐟", need: 5,
-      blurb: "FISH, STAR, MOON…",
-      words: [["FISH","🐟"],["STAR","⭐"],["MOON","🌙"],["CAKE","🎂"],["TREE","🌳"],
-              ["BIRD","🐦"],["FROG","🐸"],["DUCK","🦆"],["LION","🦁"],["BEAR","🐻"],
-              ["BOAT","⛵"],["DOOR","🚪"]]
-    },
-    {
-      id: "w5", name: "Five Letters", icon: "🐴", need: 5,
-      blurb: "HORSE, TRAIN, ROBOT…",
-      words: [["HORSE","🐴"],["TRAIN","🚂"],["APPLE","🍎"],["SNAKE","🐍"],["MOUSE","🐭"],
-              ["CLOUD","☁️"],["HOUSE","🏠"],["TIGER","🐯"],["ROBOT","🤖"],["PIZZA","🍕"],
-              ["WHALE","🐳"],["SHEEP","🐑"]]
-    },
-    {
-      id: "wsp", name: "Space Bar", icon: "🐈", need: 4,
-      blurb: "Two words — mind the gap!",
-      words: [["BIG CAT","🐈"],["RED BUS","🚌"],["HOT SUN","☀️"],["MY DOG","🐶"],
-              ["BLUE SKY","🌤️"],["TWO CATS","🐈‍⬛"],["OLD TREE","🌳"],["BAD EGG","🥚"]]
-    },
-    {
-      id: "wsh", name: "Shift Power", icon: "🔼", need: 4,
-      blurb: "Hold Shift for a BIG letter",
-      shift: true,
-      words: [["Sam","🧒"],["Ben","👦"],["Mia","👧"],["Tom","👦"],
-              ["Zoe","👧"],["Ali","🧒"],["Max","👦"],["Eva","👧"]]
-    }
+    { id: "w3",  name: "Three Letters", icon: "🐱", need: 5, blurb: "CAT, DOG, SUN…",      words: () => KB.WORDS_3 },
+    { id: "w4",  name: "Four Letters",  icon: "🐟", need: 5, blurb: "FISH, STAR, MOON…",   words: () => KB.WORDS_4 },
+    { id: "w5",  name: "Five Letters",  icon: "🐴", need: 5, blurb: "HORSE, TRAIN, ROBOT…", words: () => KB.WORDS_5 },
+    { id: "wsp", name: "Space Bar",     icon: "🐈", need: 4, blurb: "Two words — mind the gap!", words: () => KB.PHRASES },
+    { id: "wsh", name: "Shift Power",   icon: "🔼", need: 4, blurb: "Hold Shift for a BIG letter",
+      shift: true, words: () => KB.NAMES }
   ];
 
-  let level = null, queue = null, wi = 0, li = 0, wrong = 0, clean = 0, lock = false, dom = null;
+  let level = null, queue = null, wi = 0, typed = "", wrongs = 0, clean = 0, lock = false, dom = null;
 
   /* ---------------- menu ---------------- */
 
   function cleared(id) { return (KB.state.words && KB.state.words[id]) || 0; }
-
-  function unlocked(idx) {
-    if (idx === 0) return true;
-    return cleared(LEVELS[idx - 1].id) > 0;
-  }
+  function unlocked(i) { return i === 0 || cleared(LEVELS[i - 1].id) > 0; }
 
   function showMenu(stage) {
     level = null; queue = null; lock = false;
     KB.ui.hideHands();
     KB.ui.backButton(null);
     stage.innerHTML = "";
-
     stage.appendChild(KB.el("h2", "title", "Word Lab 📖"));
     stage.appendChild(KB.el("p", "lead",
-      "Build words one letter at a time. Clear a level to open the next."));
+      "Copy the word. If a letter comes out wrong it stays on the screen — " +
+      "rub it out with <b>⌫ Backspace</b> and try that one again."));
 
     const row = KB.el("div", "card-row");
     LEVELS.forEach((lv, idx) => {
       const open = unlocked(idx);
-      const c = KB.el("button", "card" + (open ? "" : " locked"));
       const n = cleared(lv.id);
+      const c = KB.el("button", "card" + (open ? "" : " locked"));
       c.innerHTML = '<span class="card-icon">' + (open ? lv.icon : "🔒") + "</span>" +
                     '<span class="card-name">' + lv.name + "</span>" +
                     '<span class="card-blurb">' + (open ? lv.blurb : "Clear the one before") + "</span>" +
-                    '<span class="card-stars">' + "⭐".repeat(Math.min(n, 3)) + "☆".repeat(Math.max(3 - n, 0)) + "</span>";
+                    '<span class="card-stars">' + "⭐".repeat(Math.min(n, 3)) +
+                    "☆".repeat(Math.max(3 - n, 0)) + "</span>";
       if (open) c.addEventListener("click", () => startLevel(stage, lv));
       row.appendChild(c);
     });
@@ -86,42 +61,67 @@
 
   function startLevel(stage, lv) {
     level = lv;
-    queue = KB.shuffle(lv.words).slice(0, lv.need);
-    wi = 0; li = 0; wrong = 0; clean = 0; lock = false;
+    queue = KB.shuffle(lv.words()).slice(0, lv.need);
+    wi = 0; clean = 0; lock = false;
 
     stage.innerHTML = "";
     dom = {
-      big:   KB.el("div", "big"),
-      word:  KB.el("div", "word"),
-      note:  KB.el("div", "note"),
-      dots:  KB.el("div", "dots")
+      picture: KB.el("div", "fix-picture"),
+      word:    KB.el("div", "word"),
+      note:    KB.el("div", "note"),
+      dots:    KB.el("div", "dots"),
+      keys:    KB.el("div", "cmd-help")
     };
-    stage.append(dom.big, dom.word, dom.note, dom.dots);
+    dom.keys.innerHTML =
+      '<span class="cmd"><b>letters</b> write</span>' +
+      '<span class="cmd"><b>Backspace</b> rub out a wrong letter</span>' +
+      (lv.shift ? '<span class="cmd"><b>Shift</b> + letter = BIG letter</span>' : "");
+    stage.append(dom.picture, dom.word, dom.note, dom.dots, dom.keys);
     KB.ui.backButton("← All levels", () => showMenu(stage));
     showWord(true);
   }
 
   function target() { return queue[wi][0]; }
 
-  function renderWord() {
+  /* How far does what they typed still agree with the word? */
+  function goodUpTo() {
     const w = target();
-    let html = "";
-    for (let j = 0; j < w.length; j++) {
-      const ch = w[j];
-      const cls = j < li ? "done" : (j === li ? "next" : "todo");
-      html += ch === " "
-        ? '<span class="' + cls + ' gap">␣</span>'
-        : '<span class="' + cls + '">' + ch + "</span>";
+    let i = 0;
+    while (i < typed.length && i < w.length && typed[i] === w[i]) i++;
+    return i;
+  }
+
+  function hasMistake() { return goodUpTo() < typed.length; }
+
+  /* One line shows everything: the letters they got right, the
+     wrong one they actually typed, and the rest of the word in
+     grey as a guide. */
+  function render() {
+    const w = target();
+    const n = Math.max(typed.length, w.length);
+    /* while a mistake is on screen the only move is Backspace, so
+       don't also point at the next letter — one thing to do at a time */
+    const stuck = hasMistake();
+    dom.word.innerHTML = "";
+    for (let i = 0; i < n; i++) {
+      let ch, cls;
+      if (i < typed.length) {
+        ch = typed[i];
+        cls = (i < w.length && typed[i] === w[i]) ? "done" : "bad";
+      } else {
+        ch = w[i];
+        cls = (!stuck && i === typed.length) ? "next" : "todo";
+      }
+      const span = KB.el("span", cls + (ch === " " ? " gap" : ""), ch === " " ? "␣" : ch);
+      dom.word.appendChild(span);
     }
-    dom.word.innerHTML = html;
   }
 
   function showWord(fresh) {
-    li = 0; wrong = 0; lock = false;
+    typed = ""; wrongs = 0; lock = false;
     const [w, emoji] = queue[wi];
-    dom.big.textContent = emoji;
-    dom.big.classList.remove("tiny");
-    renderWord();
+    dom.picture.textContent = emoji;
+    render();
     dom.note.textContent = level.shift
       ? "The first letter is BIG — hold Shift with your other hand."
       : "";
@@ -130,11 +130,15 @@
     if (fresh) KB.speak("Type the word " + w.toLowerCase() + ".");
   }
 
-  function wantsShift(ch) { return level.shift && ch === ch.toUpperCase() && /[A-Z]/.test(ch); }
+  function askForBackspace() {
+    dom.note.textContent = "That one is wrong — press ⌫ Backspace to rub it out. It is " +
+                           KB.whereIs("BACK") + ".";
+    KB.speak("That letter is wrong. Press backspace to rub it out.");
+  }
 
   function wordDone() {
     lock = true;
-    if (wrong === 0) clean++;
+    if (wrongs === 0) clean++;
     KB.sfx.great();
     KB.cheer(true);
     dom.note.textContent = KB.pick(KB.PRAISE) + "  " + target();
@@ -147,23 +151,6 @@
     }, 1600);
   }
 
-  function missed(expected) {
-    wrong++;
-    KB.sfx.nope();
-    dom.word.classList.remove("shake");
-    void dom.word.offsetWidth;
-    dom.word.classList.add("shake");
-    if (wrong >= 2) {
-      const key = expected === " " ? "SPACE" : expected.toUpperCase();
-      const hint = KB.fingerHint(key);
-      dom.note.textContent = (expected === " " ? "You need the long space bar. " : "Looking for " + key + ". ") + hint;
-      KB.ui.showHands(key);
-      KB.speak(hint);
-    } else {
-      dom.note.textContent = "Nearly — try again!";
-    }
-  }
-
   function finish() {
     const stage = document.getElementById("stage");
     KB.state.words = KB.state.words || {};
@@ -172,17 +159,15 @@
 
     KB.sfx.great();
     KB.cheer(true);
-    dom.big.textContent = "🏅";
+    dom.picture.textContent = "🏅";
     dom.word.textContent = level.name + " cleared!";
-    dom.note.textContent = clean + " of " + queue.length + " typed with no mistakes.";
+    dom.note.textContent = clean + " of " + queue.length + " typed with no mistakes at all.";
     dom.dots.textContent = "";
     KB.ui.hideHands();
-    KB.speak("Level cleared! " + clean + " out of " + queue.length + " perfect.");
+    KB.speak("Level cleared!");
     queue = null;
     setTimeout(() => { if (KB.ui.currentId() === "words") showMenu(stage); }, 2800);
   }
-
-  /* ---------------- mode object ---------------- */
 
   KB.ui.register({
     id: "words",
@@ -194,28 +179,71 @@
 
     onKey(k, mod) {
       if (!queue || lock) return;
-      const w = target();
-      const ch = w[li];
-      const expectKey = ch === " " ? "SPACE" : ch.toUpperCase();
 
-      if (k === expectKey) {
-        /* a capital really does need Shift held down */
-        if (wantsShift(ch) && !mod.shift) {
-          wrong++;
-          KB.sfx.nope();
-          dom.note.textContent = "Hold Shift, then press " + expectKey + " — both hands!";
-          KB.ui.showHands(expectKey);
-          KB.speak("Hold shift with your other hand, then press " + expectKey + ".");
-          return;
-        }
+      if (k === "BACK") {
+        if (!typed.length) { dom.note.textContent = "Nothing to rub out yet."; return; }
+        typed = typed.slice(0, -1);
         KB.sfx.pop();
-        li++;
-        if (li >= w.length) { wordDone(); return; }
-        renderWord();
+        KB.ui.hideHands();
+        dom.note.textContent = hasMistake() ? dom.note.textContent : "";
+        render();
         return;
       }
 
-      if (/^[A-Z0-9]$/.test(k) || k === "SPACE") missed(ch);
+      if (k !== "SPACE" && !/^[A-Z0-9]$/.test(k)) return;
+
+      /* while a wrong letter is sitting there, the only way on is
+         to rub it out — that is the habit being taught */
+      if (hasMistake()) { KB.sfx.nope(); askForBackspace(); return; }
+
+      const w = target();
+      if (typed.length >= w.length) { askForBackspace(); return; }
+
+      /* in the Shift level the case matters, so keep what was really typed */
+      let ch;
+      if (k === "SPACE") ch = " ";
+      else if (level.shift) ch = mod.shift ? k : k.toLowerCase();
+      else ch = k;
+
+      typed += ch;
+      const want = w[typed.length - 1];
+
+      if (ch === want) {
+        KB.sfx.pop();
+        render();
+        if (typed === w) { wordDone(); return; }
+        dom.note.textContent = "";
+        return;
+      }
+
+      /* wrong: let it show, and say what to do about it */
+      wrongs++;
+      KB.sfx.nope();
+      render();
+      dom.word.classList.remove("shake");
+      void dom.word.offsetWidth;
+      dom.word.classList.add("shake");
+
+      if (level.shift && ch.toUpperCase() === want.toUpperCase() && want === want.toUpperCase()) {
+        dom.note.textContent = "Almost! That needs to be a BIG " + want +
+                               " — rub it out, hold Shift, and press it again.";
+        KB.speak("Almost! Rub it out, then hold shift and press " + want + ".");
+      } else if (wrongs >= 2) {
+        dom.note.textContent = "Rub it out with ⌫ Backspace, then press " +
+                               (want === " " ? "the space bar" : want) + ". " +
+                               KB.fingerHint(want === " " ? "SPACE" : want.toUpperCase());
+        KB.ui.showHands(want === " " ? "SPACE" : want.toUpperCase());
+        KB.speak("Rub it out, then press " + (want === " " ? "the space bar" : want) + ".");
+      } else {
+        askForBackspace();
+      }
+    },
+
+    onRepeat(k) {
+      if (k === "BACK" && typed.length && !lock) {
+        typed = typed.slice(0, -1);
+        render();
+      }
     }
   });
 

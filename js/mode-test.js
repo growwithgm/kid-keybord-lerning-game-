@@ -22,10 +22,7 @@
   const HOME_RESTING = ["A", "S", "D", "F", "J", "K", "L"];
   const ALL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-  const W4 = [["FISH","🐟"],["STAR","⭐"],["MOON","🌙"],["CAKE","🎂"],["BIRD","🐦"],["BOAT","⛵"]];
-  const W5 = [["HORSE","🐴"],["TRAIN","🚂"],["ROBOT","🤖"],["APPLE","🍎"],["MOUSE","🐭"]];
-  const PH = [["BIG CAT","🐈"],["RED BUS","🚌"],["MY DOG","🐶"],["HOT SUN","☀️"]];
-  const NAMES = [["Sam","🧒"],["Mia","👧"],["Ben","👦"],["Zoe","👧"]];
+  const JUNK = "XQZJWVK".split("");
 
   let paper = null, dom = null;
 
@@ -56,13 +53,6 @@
       answer: bump
     });
 
-    /* --- hands: a home key --- */
-    const hk = pick(HOME);
-    q.push({
-      group: "Hands", face: hk, ask: "Press " + hk,
-      say: "Press " + hk + ".", answer: hk
-    });
-
     /* --- hands: a key by finger name alone --- */
     const fk = pick(HOME_RESTING);
     const ff = KB.FINGER[fk];
@@ -76,19 +66,43 @@
     });
 
     /* --- words --- */
-    const w4 = pick(W4);
+    const w4 = pick(KB.WORDS_4);
     q.push({ group: "Words", face: w4[1], word: w4[0], say: "Type the word " + w4[0].toLowerCase() + "." });
 
-    const w5 = pick(W5);
-    q.push({ group: "Words", face: w5[1], word: w5[0], say: "Type the word " + w5[0].toLowerCase() + "." });
-
-    const ph = pick(PH);
+    const ph = pick(KB.PHRASES);
     q.push({ group: "Words", face: ph[1], word: ph[0],
              say: "Type " + ph[0].toLowerCase() + ". Do not forget the space bar." });
 
-    const nm = pick(NAMES);
+    const nm = pick(KB.NAMES);
     q.push({ group: "Words", face: nm[1], word: nm[0], shift: true,
              say: "Type the name " + nm[0] + ". The first letter is big, so hold shift." });
+
+    /* --- fixing: the skill that matters most at this age --- */
+    const fx1 = pick(KB.WORDS_3);
+    let tail = "";
+    for (let i = 0; i < 2 + Math.floor(Math.random() * 2); i++) tail += pick(JUNK);
+    q.push({
+      group: "Fixing", face: fx1[1], fix: fx1[0], start: fx1[0] + tail,
+      say: "Too many letters! Rub them out until it says " + fx1[0].toLowerCase() + "."
+    });
+
+    const fx2 = pick(KB.WORDS_4);
+    let badLast = pick(JUNK);
+    while (badLast === fx2[0][fx2[0].length - 1]) badLast = pick(JUNK);
+    q.push({
+      group: "Fixing", face: fx2[1], fix: fx2[0], start: fx2[0].slice(0, -1) + badLast,
+      say: "The last letter is wrong. Fix it so it says " + fx2[0].toLowerCase() + "."
+    });
+
+    const fx3 = pick(KB.WORDS_4);
+    const at = 1 + Math.floor(Math.random() * (fx3[0].length - 2));
+    let badMid = pick(JUNK);
+    while (badMid === fx3[0][at]) badMid = pick(JUNK);
+    q.push({
+      group: "Fixing", face: fx3[1], fix: fx3[0],
+      start: fx3[0].slice(0, at) + badMid + fx3[0].slice(at + 1),
+      say: "A letter in the middle is wrong. Make it say " + fx3[0].toLowerCase() + "."
+    });
 
     /* --- code --- */
     q.push({
@@ -103,14 +117,6 @@
       ask: "Which command puts the robot's pen down so it draws?",
       say: "Which letter puts the pen down, so the robot draws as it moves?",
       answer: "P"
-    });
-
-    const reps = 2 + Math.floor(Math.random() * 7);
-    q.push({
-      group: "Code", face: "F".repeat(reps), tiny: true,
-      ask: "The short way to write this is a number and then F. Press the number.",
-      say: "How many forwards is that? Press the number.",
-      answer: String(reps)
     });
 
     /* --- the AI idea: can they apply a rule the robot was taught? --- */
@@ -196,6 +202,29 @@
     dom.word.innerHTML = html;
   }
 
+  /* an editing question: show what is written, right letters green,
+     wrong ones red, and the rest of the word greyed in as a guide */
+  function renderFix() {
+    const q = paper.q[paper.i];
+    const w = q.fix, t = paper.typed;
+    const stuck = fixHasMistake();
+    let html = "";
+    for (let j = 0; j < Math.max(t.length, w.length); j++) {
+      let ch, cls;
+      if (j < t.length) { ch = t[j]; cls = (j < w.length && t[j] === w[j]) ? "done" : "bad"; }
+      else { ch = w[j]; cls = (!stuck && j === t.length) ? "next" : "todo"; }
+      html += '<span class="' + cls + '">' + ch + "</span>";
+    }
+    dom.word.innerHTML = html;
+  }
+
+  function fixHasMistake() {
+    const w = paper.q[paper.i].fix, t = paper.typed;
+    let i = 0;
+    while (i < t.length && i < w.length && t[i] === w[i]) i++;
+    return i < t.length;
+  }
+
   function showQ() {
     const q = paper.q[paper.i];
     paper.first = true; paper.wrong = 0; paper.li = 0; paper.lock = false;
@@ -207,6 +236,11 @@
     if (q.word) {
       dom.sub.textContent = q.shift ? "Type the name — big letter first!" : "Type the word";
       renderWord();
+      dom.word.style.display = "";
+    } else if (q.fix) {
+      paper.typed = q.start;
+      dom.sub.textContent = "Make it say " + q.fix;
+      renderFix();
       dom.word.style.display = "";
     } else {
       dom.sub.textContent = q.ask;
@@ -355,9 +389,55 @@
         return;
       }
 
+      if (q.fix) {
+        if (k === "BACK") {
+          if (paper.typed.length) {
+            paper.typed = paper.typed.slice(0, -1);
+            KB.sfx.pop();
+            KB.ui.hideHands();
+            renderFix();
+            if (paper.typed === q.fix) correct();
+          }
+          return;
+        }
+        if (k !== "SPACE" && !/^[A-Z0-9]$/.test(k)) return;
+        if (fixHasMistake() || paper.typed.length >= q.fix.length) {
+          /* the only way forward is to rub the wrong letter out */
+          paper.first = false;
+          paper.wrong++;
+          KB.sfx.nope();
+          dom.note.textContent = paper.wrong >= 2
+            ? "Press ⌫ Backspace — " + KB.whereIs("BACK") + "."
+            : "Rub out the wrong letter first with ⌫ Backspace.";
+          if (paper.wrong >= 2) KB.speak("Press backspace to rub out the wrong letter.");
+          return;
+        }
+        const want = q.fix[paper.typed.length];
+        paper.typed += (k === "SPACE" ? " " : k);
+        if (paper.typed[paper.typed.length - 1] === want) KB.sfx.pop();
+        else { paper.first = false; paper.wrong++; KB.sfx.nope(); }
+        renderFix();
+        if (paper.typed === q.fix) correct();
+        else if (paper.wrong >= 2) {
+          dom.note.textContent = "Rub it out with ⌫ Backspace, then press " + want + ". " +
+                                 KB.fingerHint(want);
+          KB.ui.showHands(want);
+        }
+        return;
+      }
+
       if (k === q.answer) { correct(); return; }
       if (/^[A-Z0-9]$/.test(k) || k === "SPACE" ||
           k === "LEFT" || k === "RIGHT" || k === "UP" || k === "DOWN") missed(q.answer, q);
+    },
+
+    onRepeat(k) {
+      if (!paper || paper.lock || k !== "BACK") return;
+      const q = paper.q[paper.i];
+      if (!q.fix || !paper.typed.length) return;
+      paper.typed = paper.typed.slice(0, -1);
+      renderFix();
+      if (paper.typed === q.fix) correct();
     }
   });
 

@@ -48,6 +48,38 @@ window.KB = window.KB || {};
 
   KB.PRAISE = ["Great job!", "Yes!", "Brilliant!", "Super!", "Well done!", "Nice one!"];
 
+  /* ---------------- words the game knows ----------------
+     Shared by Word Lab, Fix It, Magic Writing and the test, so a
+     word only has to be added once.                            */
+
+  KB.WORDS_3 = [["CAT","🐱"],["DOG","🐶"],["SUN","☀️"],["BUS","🚌"],["CUP","☕"],
+                ["HAT","🎩"],["BEE","🐝"],["PIG","🐷"],["EGG","🥚"],["CAR","🚗"],
+                ["BAT","🦇"],["FOX","🦊"],["COW","🐮"],["BED","🛏️"],["KEY","🔑"]];
+
+  KB.WORDS_4 = [["FISH","🐟"],["STAR","⭐"],["MOON","🌙"],["CAKE","🎂"],["TREE","🌳"],
+                ["BIRD","🐦"],["FROG","🐸"],["DUCK","🦆"],["LION","🦁"],["BEAR","🐻"],
+                ["BOAT","⛵"],["DOOR","🚪"],["BALL","⚽"],["SHOE","👟"],["RAIN","🌧️"]];
+
+  KB.WORDS_5 = [["HORSE","🐴"],["TRAIN","🚂"],["APPLE","🍎"],["SNAKE","🐍"],["MOUSE","🐭"],
+                ["CLOUD","☁️"],["HOUSE","🏠"],["TIGER","🐯"],["ROBOT","🤖"],["PIZZA","🍕"],
+                ["WHALE","🐳"],["SHEEP","🐑"],["BREAD","🍞"],["CHAIR","🪑"],["PANDA","🐼"]];
+
+  KB.PHRASES = [["BIG CAT","🐈"],["RED BUS","🚌"],["HOT SUN","☀️"],["MY DOG","🐶"],
+                ["BLUE SKY","🌤️"],["TWO CATS","🐈‍⬛"],["OLD TREE","🌳"],["BAD EGG","🥚"]];
+
+  KB.NAMES = [["Sam","🧒"],["Ben","👦"],["Mia","👧"],["Tom","👦"],
+              ["Zoe","👧"],["Ali","🧒"],["Max","👦"],["Eva","👧"]];
+
+  /* one lookup for "is this a word, and what does it look like?" */
+  KB.PICTURES = {};
+  [KB.WORDS_3, KB.WORDS_4, KB.WORDS_5].forEach(list => {
+    list.forEach(([w, e]) => { KB.PICTURES[w] = e; });
+  });
+
+  KB.pictureFor = function (text) {
+    return KB.PICTURES[String(text || "").toUpperCase()] || null;
+  };
+
   /* ---------------- which finger presses which key ----------------
      Standard touch-typing map. hand: "L" | "R" | "T" (thumbs).
      finger: 0 = pointing, 1 = tall, 2 = ring, 3 = little.          */
