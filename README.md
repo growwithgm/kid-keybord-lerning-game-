@@ -1,152 +1,171 @@
-# ABC Keyboard Fun 🎈
+# Keyboard Lab 🚀
 
-A browser-based keyboard learning game for little kids (around age 4), designed to
-help them get comfortable with a laptop/computer keyboard while learning letters
-and numbers.
+Version 2 of a browser game for a young child who has already learned where the
+keys are. Version 1 taught letter-hunting and finished with a test; this one
+picks up from there and heads towards typing properly, writing code, and
+understanding how a machine learns.
 
-**No installation, no ads, no sign-up — just one HTML page.** Works offline once
-loaded and runs perfectly on GitHub Pages.
+**One page, no build step, no libraries, no sign-up.** Plain HTML, CSS and
+JavaScript, served straight from GitHub Pages, and light enough for a 4 GB
+Chromebook.
 
-## How to play
+> There is deliberately **no picture of a keyboard on the screen**. The child
+> uses the real keyboard under their hands. When they get stuck, the game says
+> which hand and finger to use and where to look — so their eyes go down to the
+> keys, not to a drawing of them.
 
-Open the page and let your child press keys!
+---
 
-### 🎈 Free Play mode (default)
-- Press any **letter** → a big colorful letter appears, with a word and emoji
-  (A for Apple 🍎), and the letter is spoken out loud.
-- Press any **number** → the number appears with counting stars and is spoken.
-- Press any **other key** → fun emoji + confetti, so nothing feels "wrong".
+## What is in it
 
-### 🔎 Find the Letter mode
-- A big letter is shown and spoken ("Find the letter B!").
-- The child hunts for it on the real keyboard.
-- Correct → big confetti celebration + a star ⭐.
-- After 3 misses, the key glows yellow on the on-screen keyboard as a hint.
+Five modes, left to right as a learning path.
 
-### 📝 Tasks mode (small practice missions)
-Ten little tasks in two levels, each teaching one keyboard skill. Finishing a
-task earns a star (up to ⭐⭐⭐ per task), and stars are **saved on the device**
-so progress stays between sessions.
+### ✋ Two Hands
+The step that comes after knowing where the letters are: knowing *whose* key it
+is. Nothing here is timed — at this age it is about awareness, not speed.
 
-**Level 1 🌱 — first steps**
+| Drill | What it teaches |
+|-------|-----------------|
+| **Left or Right?** | A letter appears; press the ← or → arrow for the hand it belongs to |
+| **Find the Bumps** | The two keys with little ridges, `f` and `j`, are how typists find their place without looking |
+| **Home Keys** | A S D F · J K L, one at a time, with the right finger shown |
 
-| Task | What it teaches |
-|------|-----------------|
-| 🚂 ABC Train | Press A → Z in order (letter positions) |
-| 🔢 Number Rocket | Press 1 → 0 in order (number row) |
-| 🐱 Little Words | Type CAT, DOG, SUN… one letter at a time |
-| 🐸 Space Jump | Find and press the big SPACE bar |
-| 🚗 Arrow Roads | Press the matching arrow keys |
+### 📖 Word Lab
+Version 1's test found exactly one weak spot — typing words — so this mode
+climbs one rung at a time and each level unlocks the next.
 
-**Level 2 🚀 — for kids who mastered Level 1**
+Three letters → four letters → five letters → **two words with a space** →
+**Shift Power**, where a capital needs the other hand holding Shift. That last
+one is the first time both hands have to work together.
 
-| Task | What it teaches |
-|------|-----------------|
-| 🔡 Small Letters | Lowercase shown on screen → find the matching (uppercase) key |
-| 🧩 First Letter | See a picture, think of the word, press its first letter |
-| 🍎 Count & Press | Count the things on screen, press that number |
-| ⚡ Quick Catch | Press the letter before the friendly 6-second clock runs out (no fail — it just encourages and keeps going) |
-| 🐘 Big Words | Type 4-letter words (FISH, STAR, MOON…) |
+### 🤖 Robot Coder
+Real programming, typed on a real keyboard. The child writes a line of commands,
+presses **Enter**, and watches the robot carry them out one step at a time.
 
-In every task, if the child can't find the key, the right key starts glowing
-yellow on the on-screen keyboard after a few seconds — so they can always
-succeed on their own.
+| Key | Command |
+|-----|---------|
+| `F` | forward one square |
+| `L` / `R` | turn left / right |
+| `P` | pen down, or up again — the robot draws as it moves |
+| `2`–`9` | repeat: `3F` means forward three times |
+| `Enter` | run the program |
+| `Backspace` | rub out the last command |
 
-### 👩‍🍳 Kitchen mode (make a pizza or a cake)
-A free, creative game with no scores and no way to lose. Every topping lives on
-the key whose letter it starts with — **M** for Mushroom, **S** for Strawberry —
-so decorating is letter practice in disguise.
+Eight levels: straight line → one turn → two turns → around a wall → draw a line
+→ *do it in four commands or fewer* → draw a square → free build.
 
-| Key | What it does |
-|-----|--------------|
-| Letters | Add that topping (🍕 Cheese, Mushroom, Olive, Tomato, Pepper, Bacon, Egg, Onion, Leaf, Shrimp — 🎂 Strawberry, Blueberry, Cherry, Kiwi, Grapes, Lemon, Heart, Flower, Nut, Melon) |
-| 1–9 | On the cake: that many candles 🕯️ (great for "how old are you?"). On the pizza: that many of one topping, counted out loud |
-| ← → ↑ ↓ | Sprinkles ✨ |
-| Space | 🔥 Bake it! — the food browns, confetti flies, and it says "Yummy!" |
-| Backspace | Start a fresh one |
+When the robot bumps into a brick it stops and says so, the wrong command stays
+on screen, and the child fixes it and runs again. That is debugging, and it is
+the point.
 
-A legend under the food always shows which letter does what, so a child who
-can't read yet can still match the shapes.
+### 🧠 Teach the Robot
+A first, honest look at machine learning. The child sorts coloured shapes into
+box **1** and box **2** by any rule they like — all the red ones, all the big
+ones — and a real (if tiny) classifier learns that rule from their examples.
 
-### 🎨 Painting mode
-A blank sheet of paper. Draw with a finger or the mouse — or steer the brush
-with the **arrow keys**, which is the best arrow practice in the whole game.
-Colours live on their own letters (**R** for Red, **B** for Blue), so picking a
-colour is letter practice too.
+Then it guesses on shapes it has never seen, and for each one it shows:
 
-| Key | What it does |
-|-----|--------------|
-| R O Y G B P K W | Red, Orange, Yellow, Green, Blue, Purple, blacK, White — and White rubs out, since the paper is white |
-| ← → ↑ ↓ | Walk the brush around, drawing as it goes (hold two for diagonals) |
-| 1–5 | Brush size, thin to fat |
-| Space | Drop a random sticker ⭐🌸🦋 at the brush |
-| Backspace | A clean page |
+- **what it thinks** — "I think it goes in box 1"
+- **how sure it is** — a confidence bar with a real percentage
+- **why** — "it is red, and you put red ones in box 1"
 
-Colour swatches under the paper are tappable for touch screens, and the
-**💾 Save** button downloads the painting as a PNG.
+The child says where it really goes, and the robot learns from the ones it got
+wrong. Nothing is faked: the guesses genuinely come from what the child taught
+it, so the lessons land by themselves — more examples make it better, and it can
+still be wrong. Teach it only one box and it will say so and ask for the other.
 
-### 🎓 Big Test (the exam)
-Twelve questions drawn from every game in the app, to check what has actually
-stuck. A point is scored **only when the answer is right first time**, but the
-child can keep trying until they get it, so the test never leaves them stuck —
-after three wrong tries the right key glows yellow and they move on.
+### 🎓 Lab Test
+Twelve questions over the new ground: which hand owns a key, the bumps, the home
+keys, a four- and a five-letter word, a phrase with a space, a name with Shift,
+the robot's commands, the repeat shortcut, and one question about what a robot
+will do with what it was taught.
 
-| # | Question | Comes from |
-|---|----------|------------|
-| 1 | Press this letter | Find the Letter |
-| 2 | Press this small letter | Small Letters |
-| 3 | Which letter does Apple start with? | First Letter |
-| 4 | Which letter comes after C? | ABC Train |
-| 5 | Count these — press the number | Count & Press |
-| 6 | Which number comes after 4? | Number Rocket |
-| 7 | Press the big SPACE bar | Space Jump |
-| 8 | Press the matching arrow | Arrow Roads |
-| 9 | Type a little word (CAT) | Little Words |
-| 10 | Type a big word (FISH) | Big Words |
-| 11 | Which letter paints Red? | Painting |
-| 12 | Which letter adds Mushroom? | Kitchen |
+A point is scored **only when the answer is right first time**, but nobody gets
+stuck: after two misses the hint names the hand, the finger and where to look.
+Passing is **9 out of 12**, and the result page breaks the score down by skill
+(Hands, Words, Code, Robot brain) so a grown-up can see what to practise next.
 
-The questions are freshly drawn every run, so the test can be taken again
-without memorising answers.
-
-**Passing is 9 out of 12.** The result page shows the score, a 🏆 if passed,
-and a per-skill breakdown (Letters 4/4, Numbers 2/2, Keys, Words, Games) so a
-grown-up can see at a glance what to practise next. The best score and the
-passed badge are saved on the device.
+---
 
 ## Shortcuts
 
-| Key | Action |
-|-----|--------|
-| **Enter** | Toggle fullscreen (the special fullscreen shortcut) |
-| **Esc** | Exit fullscreen |
-| Any letter/number | Play! |
+| Key | Does |
+|-----|------|
+| **Enter** | Go / run the robot's program |
+| **Backspace** | Rub out |
+| **Tab** | Full screen on and off |
+| **Esc** | Leave full screen |
 
-Fullscreen is recommended — it keeps little fingers away from browser tabs.
+On a Chromebook the **□ key** in the top row is full screen too.
 
-## Run it on GitHub Pages
+---
 
-1. Go to the repository **Settings → Pages**.
-2. Under **Build and deployment**, choose **Deploy from a branch**.
-3. Select your branch and the **/ (root)** folder, then **Save**.
-4. Your game will be live at `https://<username>.github.io/<repo-name>/`.
+## Notes for grown-ups
 
-## Tech notes
+This was built for the HP Chromebook the child actually uses, so:
 
-- Single `index.html` file — plain HTML/CSS/JS, zero dependencies.
-- Voice uses the browser's built-in Speech Synthesis (English).
-- Sounds are generated with the Web Audio API (no audio files).
-- Works on desktop and touch devices (on-screen keyboard is tappable).
-- Task progress is stored in `localStorage` (nothing leaves the device).
+- Its keys are printed in **lower case**. Where the game shows a single key it
+  shows both faces — a big **H** next to a small **h** — so the capital on screen
+  and the letter on the key are obviously the same thing.
+- `f` and `j` really do have the little bumps, which is what *Find the Bumps*
+  is about.
+- There is **no Caps Lock** — the Search key sits in its place. Shift is the only
+  way to make a capital, which is why Word Lab teaches it.
+- If the child hits the Search key by accident the Chromebook launcher opens;
+  press Esc to get back.
 
-### Optimized for low-end devices (e.g. 4GB Chromebooks)
-- No images, fonts, or libraries to download — the whole game is one small file.
-- The animation loop only runs while confetti is on screen; when idle the game
-  uses ~0% CPU.
-- Confetti particles are capped, and the canvas renders at 1× resolution.
+Progress — stars, unlocked levels, best test score, how much the robot has
+learned — is saved in the browser on that device only. Nothing is uploaded
+anywhere and the game works offline once the page has loaded.
 
-## Tips for parents (research-based)
+Keep sessions short. Ten minutes of the robot is worth an hour of being nagged.
 
-- Keep sessions short: 5–10 minutes is plenty at age 4.
-- Sit with your child the first few times and name the letters together.
-- There is no "wrong" way to play — exploration is the goal, not typing speed.
+---
+
+## Running it
+
+### On GitHub Pages
+**Settings → Pages → Deploy from a branch**, pick the branch and the **/ (root)**
+folder. The game appears at `https://<user>.github.io/<repo>/`.
+
+### On your own machine
+Any static server will do, for example:
+
+```
+npx http-server -p 8080 .
+```
+
+then open `http://localhost:8080`.
+
+---
+
+## How the code is laid out
+
+Version 1 was a single HTML file. This one is split up, which is a small step
+towards a real project:
+
+```
+index.html          the page: a top bar, a stage, and the script tags
+css/style.css       all the styling
+js/core.js          storage, sound, speech, sparkles, the finger map,
+                    and the Chromebook-aware "where is that key" hints
+js/ui.js            the shell: tabs, stage, hands guide, key handling
+js/mode-hands.js    ✋ Two Hands
+js/mode-words.js    📖 Word Lab
+js/mode-robot.js    🤖 Robot Coder
+js/mode-ai.js       🧠 Teach the Robot
+js/mode-test.js     🎓 Lab Test
+js/main.js          boot
+```
+
+Each mode file registers itself with `KB.ui.register({ id, icon, label, start,
+stop, onKey })`, so adding a sixth mode means adding one file and one script
+tag. The files are plain `<script>` tags rather than ES modules on purpose: it
+works on GitHub Pages and straight off the disk, with nothing to build.
+
+## What could come next
+
+- Sentences, then punctuation and the question mark
+- `IF` and `REPEAT UNTIL` for the robot — conditionals after loops
+- Letting the child train the robot on their own drawings instead of shapes
+- A two-player race on the same keyboard
