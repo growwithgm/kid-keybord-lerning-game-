@@ -1,7 +1,7 @@
 # Keyboard Fun 🌈
 
 A gentle browser game for a five-year-old who is learning her way around a
-laptop keyboard. Six little games, picked from a home screen of big picture
+laptop keyboard. Seven little games, picked from a home screen of big picture
 buttons — no reading needed to choose one.
 
 **One page, no build step, no libraries, no sign-up.** Plain HTML, CSS and
@@ -13,7 +13,16 @@ JavaScript, served from GitHub Pages, and light enough for a 4 GB Chromebook.
 
 ---
 
-## The six games
+## The seven games
+
+### 🎈 Balloons
+Balloons drift up the screen with a letter on each. Press the letter and it
+pops. Pop eight for a star, then it starts again.
+
+Deliberately gentle: three balloons at a time at most, they float slowly, a
+wrong key costs nothing at all, and a balloon that gets away just floats off —
+no lives, no game over. If one is nearly at the top the voice gives it a nudge
+("find B!"). There is a numbers round too.
 
 ### ⌨️ Write
 A blank page. Any key she presses appears, **⌫** rubs it out, and **Enter**
@@ -143,6 +152,7 @@ css/style.css       all the styling
 js/core.js          storage, sound, speech, sparkles, the word lists,
                     and the Chromebook-aware "where is that key" hints
 js/ui.js            the shell: home screen, house button, key handling
+js/mode-balloon.js  🎈 Balloons
 js/mode-write.js    ⌨️ Write
 js/mode-fix.js      ✏️ Fix It
 js/mode-words.js    📖 Words
