@@ -671,6 +671,32 @@ body {
 /* the balloon game wants the whole stage */
 .stage.mode-balloon { justify-content: flex-start; padding-top: 4px; }
 
+#version {
+  position: fixed;
+  right: 8px;
+  bottom: 6px;
+  font-size: .7rem;
+  color: #00000026;
+  z-index: 5;
+  pointer-events: none;
+}
+
+#trouble {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #ef476f;
+  color: #fff;
+  font-weight: bold;
+  font-size: .95rem;
+  text-align: center;
+  padding: 10px 14px;
+}
+#trouble.show { display: block; }
+
 /* ---------------- toast ---------------- */
 
 #toast {

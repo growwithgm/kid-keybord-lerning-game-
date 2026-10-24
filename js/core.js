@@ -9,6 +9,11 @@ window.KB = window.KB || {};
 (function (KB) {
   "use strict";
 
+  /* Shown in the corner of the home screen. If something looks
+     wrong on another machine, the first question is "what does
+     the corner say?" — a stale cached copy shows an older one. */
+  KB.VERSION = "v5";
+
   /* ---------------- saved progress ---------------- */
 
   const STORE_KEY = "keyboard-lab-2";

@@ -99,6 +99,17 @@ On a Chromebook the **□ key** in the top row is big screen too.
 
 ---
 
+## If something looks broken
+
+The bottom-right corner of the home screen shows a version, like **v5**. If a
+change does not seem to have arrived, that is the first thing to check — a
+browser holding an old copy in its cache is the usual cause, and
+**Ctrl+Shift+R** forces a fresh download.
+
+If a file genuinely fails to load, or anything throws, a red bar appears across
+the top saying so. A silent page that simply does not respond should not
+happen; if it does, the bar will say what went wrong.
+
 ## Notes for grown-ups
 
 Built for the HP Chromebook she uses:

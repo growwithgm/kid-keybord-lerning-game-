@@ -21,6 +21,7 @@
   let elStage, elHands, elHome, elBack, elSound;
 
   ui.register = function (mode) { modes.push(mode); };
+  ui.modeCount = function () { return modes.length; };
 
   /* ---------------- home screen ---------------- */
 
@@ -55,6 +56,9 @@
     elStage.appendChild(row);
     elStage.appendChild(KB.el("p", "pick-hint", ui.pickHint(modes.length)));
     ui.pickable(entries);
+
+    const stamp = document.getElementById("version");
+    if (stamp) stamp.textContent = KB.VERSION;
   };
 
   ui.go = function (id) {
