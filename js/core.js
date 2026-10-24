@@ -49,8 +49,12 @@ window.KB = window.KB || {};
   KB.PRAISE = ["Great job!", "Yes!", "Brilliant!", "Super!", "Well done!", "Nice one!"];
 
   /* ---------------- words the game knows ----------------
-     Shared by Word Lab, Fix It, Magic Writing and the test, so a
-     word only has to be added once.                            */
+     Shared by every game, so a word is only added once.
+
+     The step after three-letter words, following the usual
+     phonics order: word families first, then the two-letter
+     sounds (sh, ch, th, ng), then the tricky words that cannot
+     be sounded out at all.                                   */
 
   KB.WORDS_3 = [["CAT","🐱"],["DOG","🐶"],["SUN","☀️"],["BUS","🚌"],["CUP","☕"],
                 ["HAT","🎩"],["BEE","🐝"],["OWL","🦉"],["EGG","🥚"],["CAR","🚗"],
@@ -61,21 +65,60 @@ window.KB = window.KB || {};
                 ["BIRD","🐦"],["FROG","🐸"],["DUCK","🦆"],["LION","🦁"],["BEAR","🐻"],
                 ["BOAT","⛵"],["DOOR","🚪"],["BALL","⚽"],["SHOE","👟"],["RAIN","🌧️"]];
 
-  KB.WORDS_5 = [["HORSE","🐴"],["TRAIN","🚂"],["APPLE","🍎"],["SNAKE","🐍"],["MOUSE","🐭"],
-                ["CLOUD","☁️"],["HOUSE","🏠"],["TIGER","🐯"],["ROBOT","🤖"],["PIZZA","🍕"],
-                ["WHALE","🐳"],["SHEEP","🐑"],["BREAD","🍞"],["CHAIR","🪑"],["PANDA","🐼"]];
+  /* families: the ending stays, the first letter changes. Hearing
+     that cat, bat and hat rhyme is the whole lesson. */
+  KB.FAMILIES = [
+    { ending: "AT", words: [["CAT","🐱"],["BAT","🦇"],["HAT","🎩"],["RAT","🐀"],["MAT","🟫"]] },
+    { ending: "AN", words: [["CAN","🥫"],["FAN","🪭"],["MAN","👨"],["VAN","🚐"],["PAN","🍳"]] },
+    { ending: "OP", words: [["TOP","🔝"],["MOP","🧹"],["HOP","🐇"],["POP","🎈"]] },
+    { ending: "UN", words: [["SUN","☀️"],["RUN","🏃"],["FUN","🎉"],["BUN","🥐"]] }
+  ];
 
-  KB.PHRASES = [["BIG CAT","🐈"],["RED BUS","🚌"],["HOT SUN","☀️"],["MY DOG","🐶"],
-                ["BLUE SKY","🌤️"],["TWO CATS","🐈‍⬛"],["OLD TREE","🌳"],["BAD EGG","🥚"]];
+  /* two letters, one sound */
+  KB.DIGRAPHS = [
+    { pair: "SH", says: "sh", words: [["SHIP","🚢"],["SHOP","🏪"],["FISH","🐟"],["DISH","🍽️"]] },
+    { pair: "CH", says: "ch", words: [["CHIP","🍟"],["CHICK","🐥"],["CHAIR","🪑"],["CHOP","🪓"]] },
+    /* no MOTH here: the only emoji close to it is a butterfly, which
+       is a different animal and would teach the wrong word */
+    { pair: "TH", says: "th", words: [["BATH","🛁"],["PATH","🛤️"],["TEETH","🦷"]] },
+    { pair: "NG", says: "ng", words: [["RING","💍"],["KING","🤴"],["WING","🪽"],["SONG","🎵"]] }
+  ];
 
-  KB.NAMES = [["Sam","🧒"],["Ben","👦"],["Mia","👧"],["Tom","👦"],
-              ["Zoe","👧"],["Ali","🧒"],["Max","👦"],["Eva","👧"]];
+  /* the ones you cannot sound out — you just remember them */
+  KB.TRICKY_EASY = ["MY","GO","NO","WE","ME","BE","HE"];
+  KB.TRICKY_HARD = ["THE","SHE","YOU","ALL","ARE","WAS"];
+
+  /* a tricky word in front of a word she already knows */
+  KB.TRICKY_PHRASES = [["MY CAT","🐱"],["MY DOG","🐶"],["THE SUN","☀️"],["THE BUS","🚌"],
+                       ["MY HAT","🎩"],["THE EGG","🥚"],["MY BAG","👜"],["THE CAR","🚗"]];
 
   /* one lookup for "is this a word, and what does it look like?" */
   KB.PICTURES = {};
-  [KB.WORDS_3, KB.WORDS_4, KB.WORDS_5].forEach(list => {
+  [KB.WORDS_3, KB.WORDS_4].forEach(list => {
     list.forEach(([w, e]) => { KB.PICTURES[w] = e; });
   });
+  KB.FAMILIES.forEach(f => f.words.forEach(([w, e]) => { KB.PICTURES[w] = e; }));
+  KB.DIGRAPHS.forEach(d => d.words.forEach(([w, e]) => { KB.PICTURES[w] = e; }));
+
+  /* Pictures a child will name the way we mean it. Several of the
+     word-family pictures are fine as a reminder once she has been
+     told the word (🐇 next to HOP), but she would call them
+     something else cold — rabbit, balloon, butterfly, broom. Any
+     game that asks "what does this start with?" may only use the
+     unambiguous ones. */
+  const CLEAR = ("CAT DOG SUN BUS CUP HAT BEE OWL EGG CAR BAT FOX COW BED KEY BAG MAP " +
+                 "FISH STAR MOON CAKE TREE BIRD FROG DUCK LION BEAR BOAT DOOR BALL SHOE " +
+                 "CAN FAN MAN VAN PAN RAT " +
+                 "SHIP SHOP DISH CHICK CHAIR BATH TEETH RING KING WING").split(" ");
+
+  KB.CLEAR_PICTURE_WORDS = CLEAR
+    .filter(w => KB.PICTURES[w])
+    .map(w => [w, KB.PICTURES[w]]);
+
+  KB.isClearPicture = function (word) { return CLEAR.indexOf(word) !== -1; };
+
+  /* every picture word, for the games that just want one */
+  KB.ALL_PICTURE_WORDS = Object.keys(KB.PICTURES).map(w => [w, KB.PICTURES[w]]);
 
   KB.pictureFor = function (text) {
     return KB.PICTURES[String(text || "").toUpperCase()] || null;

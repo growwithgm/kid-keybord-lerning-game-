@@ -23,8 +23,13 @@
   const GOAL          = 8;      /* balloons to pop for a star */
 
   const ROUNDS = [
-    { id: "b1", icon: "🎈", name: "Letters", blurb: "pop the letter", pool: () => LETTERS },
-    { id: "b2", icon: "🔢", name: "Numbers", blurb: "pop the number", pool: () => DIGITS }
+    { id: "b1", icon: "🎈", name: "Letters", blurb: "pop the letter",
+      pool: () => LETTERS.map(c => ({ key: c, face: c })) },
+    { id: "b2", icon: "🔢", name: "Numbers", blurb: "pop the number",
+      pool: () => DIGITS.map(c => ({ key: c, face: c })) },
+    /* a picture balloon: press the letter the word starts with */
+    { id: "b3", icon: "🐱", name: "First Sound", blurb: "what does it start with?",
+      pool: () => KB.CLEAR_PICTURE_WORDS.map(w => ({ key: w[0][0], face: w[1], word: w[0] })) }
   ];
 
   let round = null, sky = null, dom = null;
@@ -78,9 +83,10 @@
     KB.ui.backButton("← Back", () => showMenu(stage));
     KB.ui.hideHands();
     updateScore();
-    KB.speak(round.id === "b1"
-      ? "Press the letter on the balloon to pop it!"
-      : "Press the number on the balloon to pop it!");
+    KB.speak(
+      round.id === "b1" ? "Press the letter on the balloon to pop it!" :
+      round.id === "b2" ? "Press the number on the balloon to pop it!" :
+                          "Press the letter the picture starts with!");
 
     lastTime = 0;
     raf = requestAnimationFrame(tick);
@@ -97,12 +103,13 @@
   function spawn() {
     if (balloons.filter(b => !b.popping).length >= MAX_ON_SCREEN) return;
 
-    const pool = round.pool().filter(c => !onScreen(c));
+    const pool = round.pool().filter(c => !onScreen(c.key));
     if (!pool.length) return;
-    const ch = KB.pick(pool);
+    const item = KB.pick(pool);
+    const ch = item.key;
 
-    const el = KB.el("div", "balloon");
-    el.textContent = ch;
+    const el = KB.el("div", "balloon" + (item.word ? " picture" : ""));
+    el.textContent = item.face;
     const colour = KB.pick(KB.COLORS);
     el.style.background = colour;
     sky.appendChild(el);
@@ -114,7 +121,8 @@
 
     /* start just below the sky so it rises into view, not half
        cut off along the bottom edge */
-    const b = { ch: ch, el: el, x: x, y: h, called: false, popping: false };
+    const b = { ch: ch, el: el, x: x, y: h, word: item.word || null,
+                called: false, popping: false };
     el.style.left = x + "px";
     el.style.top = b.y + "px";
     balloons.push(b);
@@ -142,7 +150,9 @@
       if (!b.called && b.y < h * 0.3) {
         b.called = true;
         if (balloons.filter(x => !x.popping).length <= 2) {
-          KB.speak("Find " + b.ch + "!");
+          KB.speak(b.word
+            ? b.word.toLowerCase() + " starts with " + b.ch + "!"
+            : "Find " + b.ch + "!");
         }
       }
 

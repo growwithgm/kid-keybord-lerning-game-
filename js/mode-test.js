@@ -26,39 +26,51 @@
     const q = [];
     const pick = KB.pick;
 
-    /* 1 · press a letter you can see */
-    const a1 = pick("ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""));
-    q.push({ group: "Letters", face: a1, ask: "Press this letter",
-             say: "Press " + a1 + ".", answer: a1 });
+    /* 1 · first sound: see a picture, press the letter it starts with */
+    const p1 = pick(KB.CLEAR_PICTURE_WORDS);
+    q.push({ group: "Sounds", face: p1[1],
+             ask: "What does this start with?",
+             say: p1[0].toLowerCase() + ". What letter does it start with?",
+             answer: p1[0][0],
+             help: p1[0].toLowerCase() + " starts with " + p1[0][0] + "." });
 
-    /* 2 · the long bar */
-    q.push({ group: "Letters", face: "🐸", ask: "Press the long bar at the bottom",
-             say: "Press the big long bar at the bottom.", answer: "SPACE" });
+    /* 2 · rhyme: change the first letter of a word she knows.
+       Both pictures have to be ones she can name on sight. */
+    const famsWithClearPics = KB.FAMILIES
+      .map(f => ({ ending: f.ending, words: f.words.filter(w => KB.isClearPicture(w[0])) }))
+      .filter(f => f.words.length >= 2);
+    const fam = pick(famsWithClearPics);
+    const two = KB.shuffle(fam.words).slice(0, 2);
+    q.push({ group: "Sounds", face: two[0][1] + " ➜ " + two[1][1], tiny: true,
+             ask: two[0][0] + " becomes " + two[1][0] + ". Press the new first letter",
+             say: two[0][0].toLowerCase() + " becomes " + two[1][0].toLowerCase() +
+                  ". Which letter does it start with now?",
+             answer: two[1][0][0],
+             help: two[1][0].toLowerCase() + " starts with " + two[1][0][0] + "." });
 
-    /* 3 · a number */
-    const n3 = 1 + Math.floor(Math.random() * 9);
-    q.push({ group: "Letters", face: "⭐".repeat(n3), tiny: true,
-             ask: "How many stars? Press that number",
-             say: "Count the stars, then press that number.", answer: String(n3) });
+    /* 3 · a word family word */
+    const famW = pick(pick(KB.FAMILIES).words);
+    q.push({ group: "Words", face: famW[1], word: famW[0],
+             say: "Type " + famW[0].toLowerCase() + "." });
 
-    /* 4 · type a little word */
-    const w4 = pick(KB.WORDS_3);
-    q.push({ group: "Words", face: w4[1], word: w4[0],
-             say: "Type " + w4[0].toLowerCase() + "." });
+    /* 4 · a two-letter sound word */
+    const dig = pick(KB.DIGRAPHS);
+    const digW = pick(dig.words);
+    q.push({ group: "Words", face: digW[1], word: digW[0],
+             say: "Type " + digW[0].toLowerCase() + ". Remember, " +
+                  dig.pair.split("").join(" ") + " says " + dig.says + "." });
 
-    /* 5 · rub the extra letters off */
-    const f5 = pick(KB.WORDS_3);
+    /* 5 · a tricky word */
+    const tw = pick(KB.TRICKY_EASY.concat(KB.TRICKY_HARD));
+    q.push({ group: "Tricky", face: "⭐", word: tw,
+             say: "Type the tricky word " + tw.toLowerCase() + "." });
+
+    /* 6 · fixing: rub the wrong letters off */
+    const fx = pick(KB.WORDS_3);
     let tail = "";
     for (let i = 0; i < 2; i++) tail += pick(JUNK);
-    q.push({ group: "Fixing", face: f5[1], fix: f5[0], start: f5[0] + tail,
-             say: "Too many letters! Press backspace until it says " + f5[0].toLowerCase() + "." });
-
-    /* 6 · rub one off and write the right one */
-    const f6 = pick(KB.WORDS_3);
-    let bad = pick(JUNK);
-    while (bad === f6[0][f6[0].length - 1]) bad = pick(JUNK);
-    q.push({ group: "Fixing", face: f6[1], fix: f6[0], start: f6[0].slice(0, -1) + bad,
-             say: "The last letter is wrong. Make it say " + f6[0].toLowerCase() + "." });
+    q.push({ group: "Fixing", face: fx[1], fix: fx[0], start: fx[0] + tail,
+             say: "Too many letters! Press backspace until it says " + fx[0].toLowerCase() + "." });
 
     return q;
   }

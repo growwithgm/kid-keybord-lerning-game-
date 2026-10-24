@@ -87,15 +87,15 @@
 
   /* ---------------- play ---------------- */
 
-  /* three-letter words only — fixing is the hard part here, the
-     word itself should not be */
-  function wordPool() {
-    return KB.WORDS_3;
+  /* she clears three-letter words easily now, so the first two
+     levels stay short and the last one stretches to four */
+  function wordPool(lv) {
+    return (lv && lv.id === "f3") ? KB.WORDS_3.concat(KB.WORDS_4) : KB.WORDS_3;
   }
 
   function startLevel(stage, lv) {
     level = lv;
-    queue = KB.shuffle(wordPool()).slice(0, lv.need);
+    queue = KB.shuffle(wordPool(lv)).slice(0, lv.need);
     qi = 0; clean = 0; lock = false;
 
     stage.innerHTML = "";

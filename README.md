@@ -1,8 +1,7 @@
 # Keyboard Fun 🌈
 
-A gentle browser game for a five-year-old who is learning her way around a
-laptop keyboard. Seven little games, picked from a home screen of big picture
-buttons — no reading needed to choose one.
+A gentle browser game for a five-year-old. Seven little games, picked from a
+home screen of big picture buttons — no reading needed to choose one.
 
 **One page, no build step, no libraries, no sign-up.** Plain HTML, CSS and
 JavaScript, served from GitHub Pages, and light enough for a 4 GB Chromebook.
@@ -13,59 +12,71 @@ JavaScript, served from GitHub Pages, and light enough for a 4 GB Chromebook.
 
 ---
 
+## Where this sits
+
+She can already find the letters, type three-letter words, use the space bar,
+count, and — the important one — notice a mistake and rub it out with
+Backspace. She passed the last test 6/6.
+
+This version is the next rung, and it follows the usual phonics order rather
+than inventing one:
+
+| New game | Why it comes next |
+|----------|-------------------|
+| **Rhymes** (word families) | The standard step straight after three-letter words: the ending stays, the first letter changes |
+| **Two Letters** (sh, ch, th, ng) | Consonant digraphs are next in the sequence — two letters making one sound |
+| **Tricky Words** (the, my, you, she) | The common little words that cannot be sounded out and simply have to be known |
+| **First Sound** (a new Balloons round) | Hear a word, find the letter it begins with |
+
+The sources also warn against rushing from three-letter words into blends and
+digraphs, so everything here stays short — three words a level — and the
+picture and the voice always give the word before she has to type it.
+
+---
+
 ## The seven games
 
 ### 🎈 Balloons
-Balloons drift up the screen with a letter on each. Press the letter and it
-pops. Pop eight for a star, then it starts again.
+Balloons drift up with something on each; press the matching key and it pops.
+Eight pops earns a star. Three rounds: **Letters**, **Numbers**, and the new
+**First Sound**, where the balloon carries a picture and she presses the letter
+the word begins with.
 
-Deliberately gentle: three balloons at a time at most, they float slowly, a
-wrong key costs nothing at all, and a balloon that gets away just floats off —
-no lives, no game over. If one is nearly at the top the voice gives it a nudge
-("find B!"). There is a numbers round too.
+Gentle by design: three balloons at a time at most, a slow drift, a wrong key
+costs nothing, and a balloon that escapes just floats away. No lives, no game
+over.
+
+### 🐱 Rhymes
+Word families. `-AT` gives CAT, BAT, HAT, RAT; then `-AN`, `-OP`, `-UN`. The
+ending is shown above the word the whole time, so the pattern does the
+teaching.
+
+### 🚢 Two Letters
+**SH** says "sh". Then CH, TH and NG. Four words a sound — SHIP, SHOP, FISH,
+DISH — with the pair named above and spoken before each word.
+
+### 🪄 Tricky Words
+MY, GO, WE, then THE, SHE, YOU, then a tricky word in front of one she already
+knows: **MY CAT**, **THE SUN**. These are shown and said rather than sounded
+out, because that is the only way they work.
 
 ### ⌨️ Write
-A blank page. Any key she presses appears, **⌫** rubs it out, and **Enter**
-makes the computer read it aloud.
-
-Spell a word the game knows and its picture appears — C-A-T gives 🐱. Spell it
-wrong and it does not, so going back and fixing it is her own idea rather than
-the game telling her off. Nothing is marked wrong and no key is ever refused.
+A blank page. Any key appears, **⌫** rubs it out, **Enter** reads it aloud.
+Spell a word the game knows and its picture appears — now including the new
+ones, so S-H-I-P gives 🚢. Spell it wrong and it does not, so fixing it is her
+own idea. Nothing is ever refused or marked wrong.
 
 ### ✏️ Fix It
-Three-letter words, written wrong. Make them match the picture.
-
-| Level | What is broken |
-|-------|----------------|
-| **Rub it out** | Extra letters on the end — ⌫ only |
-| **Last one wrong** | Rub one out, write the right one |
-| **Finish it** | Letters missing — write the rest |
-
-### 📖 Words
-Copy the word: three letters, then four, then two words with a space. Three
-words clears a level and opens the next.
-
-**A wrong letter lands on the screen in red and stays there** until she rubs it
-out. The game does not do the noticing for her — that is the skill.
-
-### 🤖 Robot
-Arrow keys drive a robot around a little grid, collecting stars. Press an arrow
-and it moves *straight away*. Working out the route and pressing the keys in
-order is the seed of programming; writing the whole plan down first can wait
-until she is older.
-
-### 🧠 Teach Robot
-Four shapes to sort into box **1** or box **2**, any way she likes — all the red
-ones, all the big ones. A real (if tiny) classifier learns her rule, then
-guesses on shapes it has not seen, showing how sure it is and why. It learns
-from the ones it gets wrong. Put everything in one box and it will notice and
-ask for some in the other.
+Words written wrong; make them match the picture. **Rub it out** (extra letters
+on the end), **Last one wrong**, and **Finish it**, which now stretches to
+four-letter words.
 
 ### ⭐ Star Test
-Six short questions: press a letter, press the long bar, count some stars, type
-a little word, and fix two broken ones. A star is only given when the answer is
-right first time, but after two tries the hint tells her what to do, so she is
-never stuck. **Five out of six passes.**
+Six short questions across the new ground: what a picture starts with, which
+letter turns CAT into BAT, a word-family word, a two-letter-sound word, a
+tricky word, and one broken word to fix. A star is only given when the answer
+is right first time, but after two tries the hint says what to do. **Five out
+of six passes.**
 
 ---
 
@@ -74,9 +85,8 @@ never stuck. **Five out of six passes.**
 | Key | Does |
 |-----|------|
 | **⌫ Backspace** | Rubs out one letter |
-| **Enter** | Reads it out loud / go |
-| **Arrow keys** | Move the robot |
-| **1 and 2** | The two boxes in Teach Robot |
+| **Enter** | Reads it out loud |
+| **Space** | The gap between two words |
 | **Tab** | Big screen on and off |
 | **Esc** | Leave big screen |
 
@@ -86,47 +96,29 @@ On a Chromebook the **□ key** in the top row is big screen too.
 
 ## Notes for grown-ups
 
-Built for the HP Chromebook she actually uses:
+Built for the HP Chromebook she uses:
 
-- Its keys are printed in **lower case**, so hints say "look for a small f"
-  rather than naming a capital.
-- `f` and `j` have the little bumps, which is how typists find their place.
+- Its keys are printed in **lower case**, so hints say "look for a small f".
+- `f` and `j` have the little bumps typists find their place with.
 - There is **no Caps Lock** — the Search key sits in its place. Nothing in the
-  game needs capitals, so it never comes up.
+  game needs capitals.
 - If she hits the Search key by accident the launcher opens; press Esc.
 
-Progress — stars, unlocked levels, words spelled, best test score — is saved in
-the browser on that device only. Nothing is uploaded anywhere, and the game
-works offline once loaded.
+**On the pictures.** Any game that asks *"what does this start with?"* only
+uses pictures a child will name the way we mean — 🐱 cat, 🚌 bus, 🚢 ship. The
+word-family pictures include looser ones (🐇 beside HOP, 🎈 beside POP) which
+work as a reminder once the word has been said, but those are never used for a
+first-sound question. There is no MOTH in the game, because the nearest emoji
+is a butterfly and that is a different animal.
+
+Progress is saved in the browser on that device only. Nothing is uploaded, and
+the game works offline once loaded.
 
 Keep sessions short. Ten minutes is plenty.
 
 **One honest caveat:** a recent (small, short-term) study of five-year-olds
 found handwriting beat typing for early letter and word learning. This game
-teaches the *keyboard*, not reading and writing. Keep the pencil going too.
-
----
-
-## Why it looks like this
-
-An earlier version of this game had seven tabs, drills that asked which finger
-owned a key, and a robot you had to write a program for. That was too much for
-five, so it was pulled back:
-
-- **A home screen of big picture buttons** instead of a strip of tabs.
-- **Short words on screen**; the longer explaining is done by the voice.
-- **Three or four rounds a level**, not ten.
-- **No finger names.** A hint says "it is on your left hand" and shows two
-  hands, nothing more.
-- **The robot moves on each arrow press** instead of running a typed program.
-- **Six test questions**, all things she can actually do.
-
-What stayed is the part the research is clearest about: **Backspace**.
-TypingClub's own teaching guide keeps it enabled for beginners, because not
-being able to fix a mistake is what makes children give up, and the UK Year 1
-computing curriculum gives *adding and removing text* its own lesson well before
-any code. So every game here lets a mistake happen, show itself, and be rubbed
-out.
+teaches the *keyboard*. Keep the pencil going too.
 
 ---
 
@@ -149,28 +141,31 @@ then open `http://localhost:8080`.
 ```
 index.html          the page: a bar, a stage, and the script tags
 css/style.css       all the styling
-js/core.js          storage, sound, speech, sparkles, the word lists,
+js/core.js          storage, sound, speech, sparkles, every word list,
                     and the Chromebook-aware "where is that key" hints
 js/ui.js            the shell: home screen, house button, key handling
+js/drill.js         the shared engine behind the three copying games
 js/mode-balloon.js  🎈 Balloons
+js/mode-rhyme.js    🐱 Rhymes
+js/mode-sounds.js   🚢 Two Letters
+js/mode-tricky.js   🪄 Tricky Words
 js/mode-write.js    ⌨️ Write
 js/mode-fix.js      ✏️ Fix It
-js/mode-words.js    📖 Words
-js/mode-robot.js    🤖 Robot
-js/mode-ai.js       🧠 Teach Robot
 js/mode-test.js     ⭐ Star Test
 js/main.js          boot
 ```
 
-Each mode registers itself with `KB.ui.register({ id, icon, label, color,
-start, stop, onKey })`, so adding another game means one file and one script
-tag. The order of the script tags is the order of the home screen. Plain
-`<script>` tags rather than ES modules on purpose: nothing to build, and it
-runs from GitHub Pages or straight off the disk.
+Rhymes, Two Letters and Tricky Words are the same game with different word
+lists, so they share `drill.js` and are about forty lines each. Every mode
+registers itself with `KB.ui.register({ id, icon, label, color, start, stop,
+onKey })`, and the order of the script tags is the order of the home screen.
+Plain `<script>` tags on purpose: nothing to build, runs from GitHub Pages or
+straight off the disk.
 
 ## What could come next, when she is ready
 
-- Longer words, then a short sentence
-- Capitals with Shift
-- Moving the cursor with the arrow keys to fix a letter in the middle
-- Giving the robot a plan to follow instead of one step at a time
+- Blends: STOP, FLAG, MILK — two consonants side by side, the rung after these
+- Vowel teams: ai, ee, oa
+- Capitals with Shift, and her own name
+- A short sentence, and the full stop
+- The robot and the sorting robot could come back once reading is steadier

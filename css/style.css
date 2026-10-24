@@ -562,6 +562,17 @@ body {
 }
 .box-items { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
 
+/* the line above a drill word: "-AT" or "SH says sh" */
+.banner {
+  font-size: clamp(1rem, 3.2vh, 1.5rem);
+  font-weight: bold;
+  color: var(--ink-2);
+  background: #ffffffcc;
+  border-radius: 999px;
+  padding: 6px 18px;
+}
+.banner b { color: var(--accent); font-size: 1.25em; letter-spacing: .08em; }
+
 /* ---------------- balloons ---------------- */
 
 .sky {
@@ -611,6 +622,8 @@ body {
   border-radius: 50%;
   background: rgba(255,255,255,.45);
 }
+
+.balloon.picture { font-size: clamp(1.4rem, 4.6vh, 2.3rem); text-shadow: none; }
 
 .balloon.pop { animation: balloonPop .3s ease forwards; }
 @keyframes balloonPop {
