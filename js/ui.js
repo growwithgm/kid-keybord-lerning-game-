@@ -25,6 +25,7 @@
   /* ---------------- home screen ---------------- */
 
   ui.home = function () {
+    picks = null;
     if (current && current.stop) current.stop();
     current = null;
     KB.hush();
@@ -41,6 +42,7 @@
     elStage.appendChild(KB.el("p", "home-lead", "Pick a game!"));
 
     const row = KB.el("div", "home-row");
+    const entries = [];
     modes.forEach(m => {
       const c = KB.el("button", "home-card");
       c.style.setProperty("--c", m.color || "#7a6ff0");
@@ -48,12 +50,16 @@
                     '<span class="home-name">' + m.label + "</span>";
       c.addEventListener("click", () => ui.go(m.id));
       row.appendChild(c);
+      entries.push({ el: c, pick: () => ui.go(m.id) });
     });
     elStage.appendChild(row);
+    elStage.appendChild(KB.el("p", "pick-hint", ui.pickHint(modes.length)));
+    ui.pickable(entries);
   };
 
   ui.go = function (id) {
     if (!id) { ui.home(); return; }
+    picks = null;
     if (current && current.stop) current.stop();
     KB.hush();
     current = modes.find(m => m.id === id);
@@ -69,6 +75,71 @@
   };
 
   ui.currentId = function () { return current ? current.id : null; };
+
+  /* ---------------- keyboard-driven menus ----------------
+     Every menu in the game used to need the trackpad: a child
+     could open a game, press every key she knew and have
+     nothing happen at all. In a game about the keyboard that is
+     the one place a mouse must not be needed, so menus are now
+     driven by the number keys, the arrows and Enter.
+
+     A menu stays "live" only while its buttons are still in the
+     page. The moment a mode replaces the stage with a level the
+     buttons are detached, the menu goes quiet by itself, and
+     keys go back to the mode. No bookkeeping to forget.      */
+
+  let picks = null, picked = 0, onBack = null;
+
+  function picksAlive() {
+    return picks && picks.length && document.body.contains(picks[0].el);
+  }
+
+  function highlight(i) {
+    if (!picksAlive()) return;
+    picked = (i + picks.length) % picks.length;
+    picks.forEach((p, n) => p.el.classList.toggle("sel", n === picked));
+  }
+
+  ui.pickable = function (entries, opts) {
+    picks = entries.filter(e => e && e.el && !e.locked);
+    onBack = (opts && opts.onBack) || null;
+    if (!picks.length) { picks = null; return; }
+    /* a card always wears its number, even when it is the only one
+       unlocked — "press 1" is plainer to a child than "press Enter" */
+    picks.forEach((p, i) => {
+      if (i > 8) return;
+      if (p.el.classList.contains("card") || p.el.classList.contains("home-card")) {
+        p.el.appendChild(KB.el("span", "card-key", String(i + 1)));
+      }
+    });
+    highlight(0);
+  };
+
+  ui.pickHint = function (n, kind) {
+    if (kind === "button") return "Press <b>Enter</b> to start — or click.";
+    if (n <= 1) return "Press <b>1</b> to start — or click.";
+    const list = n === 2 ? "<b>1</b> or <b>2</b>"
+                         : "<b>1</b> to <b>" + Math.min(n, 9) + "</b>";
+    return "Press " + list + " to choose — or click.";
+  };
+
+  function menuKey(k) {
+    if (/^[1-9]$/.test(k)) {
+      const i = parseInt(k, 10) - 1;
+      if (i < picks.length) { highlight(i); KB.sfx.pop(); picks[i].pick(); }
+      else KB.sfx.tick();
+      return true;
+    }
+    if (k === "ENTER" || k === "SPACE") { KB.sfx.pop(); picks[picked].pick(); return true; }
+    if (k === "LEFT" || k === "UP")    { KB.sfx.tick(); highlight(picked - 1); return true; }
+    if (k === "RIGHT" || k === "DOWN") { KB.sfx.tick(); highlight(picked + 1); return true; }
+    if (k === "BACK") {
+      KB.sfx.pop();
+      if (onBack) onBack(); else ui.home();
+      return true;
+    }
+    return true;   /* a stray letter on a menu simply does nothing */
+  }
 
   /* a second, smaller button a mode can borrow to step back out
      of a level into its own list */
@@ -147,6 +218,8 @@
     e.preventDefault();
     const k = normalize(e);
     if (!k) return;
+
+    if (picksAlive()) { if (!e.repeat) menuKey(k); return; }
 
     if (e.repeat) {
       if (current && current.onRepeat) current.onRepeat(k, e);

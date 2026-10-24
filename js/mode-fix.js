@@ -72,6 +72,7 @@
       "The word is wrong. Use <b>⌫</b> to rub out and the letters to write."));
 
     const row = KB.el("div", "card-row");
+    const entries = [];
     LEVELS.forEach((lv, idx) => {
       const unlocked = open(idx);
       const c = KB.el("button", "card" + (unlocked ? "" : " locked"));
@@ -79,10 +80,15 @@
                     '<span class="card-name">' + lv.name + "</span>" +
                     '<span class="card-blurb">' + (unlocked ? lv.blurb : "") + "</span>" +
                     '<span class="card-stars">' + stars(lv.id) + "</span>";
-      if (unlocked) c.addEventListener("click", () => startLevel(stage, lv));
+      if (unlocked) {
+        c.addEventListener("click", () => startLevel(stage, lv));
+        entries.push({ el: c, pick: () => startLevel(stage, lv) });
+      }
       row.appendChild(c);
     });
     stage.appendChild(row);
+    stage.appendChild(KB.el("p", "pick-hint", KB.ui.pickHint(entries.length)));
+    KB.ui.pickable(entries, { onBack: () => KB.ui.home() });
   }
 
   /* ---------------- play ---------------- */

@@ -36,6 +36,7 @@
       stage.appendChild(KB.el("p", "lead", cfg.lead));
 
       const row = KB.el("div", "card-row");
+      const entries = [];
       cfg.levels.forEach((lv, i) => {
         const open = unlocked(i);
         const c = KB.el("button", "card" + (open ? "" : " locked"));
@@ -43,10 +44,15 @@
                       '<span class="card-name">' + lv.name + "</span>" +
                       '<span class="card-blurb">' + (open ? (lv.blurb || "") : "") + "</span>" +
                       '<span class="card-stars">' + starsFor(lv.id) + "</span>";
-        if (open) c.addEventListener("click", () => startLevel(stage, lv));
+        if (open) {
+          c.addEventListener("click", () => startLevel(stage, lv));
+          entries.push({ el: c, pick: () => startLevel(stage, lv) });
+        }
         row.appendChild(c);
       });
       stage.appendChild(row);
+      stage.appendChild(KB.el("p", "pick-hint", KB.ui.pickHint(entries.length)));
+      KB.ui.pickable(entries, { onBack: () => KB.ui.home() });
     }
 
     /* ---------------- play ---------------- */

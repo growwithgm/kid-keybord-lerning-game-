@@ -96,7 +96,9 @@
     const go = KB.el("button", "big-btn", "▶️ Start");
     go.addEventListener("click", () => start(stage));
     card.appendChild(go);
+    card.appendChild(KB.el("p", "pick-hint", KB.ui.pickHint(1, "button")));
     stage.appendChild(card);
+    KB.ui.pickable([{ el: go, pick: () => start(stage) }], { onBack: () => KB.ui.home() });
   }
 
   function start(stage) {
@@ -277,8 +279,13 @@
     home.addEventListener("click", () => KB.ui.home());
     row.append(again, home);
     card.appendChild(row);
+    card.appendChild(KB.el("p", "pick-hint", KB.ui.pickHint(2, "button")));
 
     stage.appendChild(card);
+    KB.ui.pickable([
+      { el: again, pick: () => start(stage) },
+      { el: home,  pick: () => KB.ui.home() }
+    ], { onBack: () => KB.ui.home() });
 
     if (passed) KB.cheer(true);
     KB.speak(passed

@@ -52,6 +52,7 @@
     stage.appendChild(KB.el("p", "lead", "Press the letter on the balloon to pop it!"));
 
     const row = KB.el("div", "card-row");
+    const entries = [];
     ROUNDS.forEach(r => {
       const c = KB.el("button", "card");
       c.innerHTML = '<span class="card-icon">' + r.icon + "</span>" +
@@ -60,8 +61,11 @@
                     '<span class="card-stars">' + stars(r.id) + "</span>";
       c.addEventListener("click", () => play(stage, r));
       row.appendChild(c);
+      entries.push({ el: c, pick: () => play(stage, r) });
     });
     stage.appendChild(row);
+    stage.appendChild(KB.el("p", "pick-hint", KB.ui.pickHint(entries.length)));
+    KB.ui.pickable(entries, { onBack: () => KB.ui.home() });
   }
 
   /* ---------------- playing ---------------- */

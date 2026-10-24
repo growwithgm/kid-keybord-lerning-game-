@@ -82,10 +82,15 @@ of six passes.**
 
 ## Keys
 
-| Key | Does |
-|-----|------|
-| **⌫ Backspace** | Rubs out one letter |
-| **Enter** | Reads it out loud |
+**Everything works from the keyboard — no trackpad needed anywhere.** On the
+home screen and on every game's menu, each card wears the number to press.
+
+| Key | On a menu | In a game |
+|-----|-----------|-----------|
+| **1 … 7** | Pick that card | — |
+| **Arrows** | Move the highlight | Pop balloons, etc. |
+| **Enter** | Pick the highlighted one | Reads your writing out loud |
+| **⌫ Backspace** | Go back | Rubs out one letter |
 | **Space** | The gap between two words |
 | **Tab** | Big screen on and off |
 | **Esc** | Leave big screen |
